@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Achei — Etiquetas de identificação com QR Code</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --terracota:#E8836F;
+    --terracota-dark:#C96650;
+    --gold:#E0A458;
+    --cream:#FDF6EC;
+    --teal:#2D4F4F;
+    --teal-light:#3E6B6B;
+    --ink:#2A211B;
+    --line:#E7DCC9;
+    --danger:#B3413A;
+    --alert:#D94F3D;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--cream);
+    font-family:'Nunito',sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 60px;}
+
+  .brand{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
+  .brand h1{
+    font-family:'Fredoka',sans-serif;
+    font-size:30px;
+    font-weight:700;
+    color:var(--teal);
+    margin:0;
+    letter-spacing:0.2px;
+  }
+  .brand p{margin:2px 0 0;color:var(--teal-light);font-size:14.5px;font-weight:600;}
+  .lion-mark{width:52px;height:52px;flex-shrink:0;}
+
+  .tabs{display:flex;gap:6px;margin:28px 0 22px;border-bottom:2px solid var(--line);}
+  .tab-btn{
+    font-family:'Fredoka',sans-serif;
+    font-weight:600;
+    font-size:15px;
+    padding:11px 20px;
+    background:none;
+    border:none;
+    cursor:pointer;
+    color:var(--teal-light);
+    border-bottom:3px solid transparent;
+    margin-bottom:-2px;
+    transition:color .15s;
+  }
+  .tab-btn.active{color:var(--terracota-dark);border-bottom-color:var(--terracota);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .saved-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:22px;}
+  .saved-bar-label{font-size:12.5px;font-weight:700;color:var(--teal-light);margin-right:2px;}
+  .chip{
+    display:flex;align-items:center;gap:6px;
+    background:#fff;border:1.5px solid var(--line);border-radius:20px;
+    padding:6px 8px 6px 14px;font-size:13px;font-weight:700;color:var(--teal);cursor:pointer;
+  }
+  .chip:hover{border-color:var(--terracota);}
+  .chip.active{background:var(--terracota);border-color:var(--terracota);color:#fff;}
+  .chip .x{
+    width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,0.08);font-size:11px;line-height:1;color:inherit;
+  }
+  .chip.active .x{background:rgba(255,255,255,0.25);}
+  .chip-new{
+    background:none;border:1.5px dashed var(--terracota);color:var(--terracota-dark);
+    border-radius:20px;padding:6px 16px;font-size:13px;font-weight:700;cursor:pointer;
+  }
+
+  .creator{display:grid;grid-template-columns:1fr 380px;gap:36px;align-items:start;}
+  @media (max-width:780px){.creator{grid-template-columns:1fr;}}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:13.5px;font-weight:700;color:var(--teal);margin-bottom:6px;}
+  .field .hint{font-weight:400;color:#8a7f6e;font-size:12.5px;margin-left:4px;}
+  .field input, .field textarea{
+    width:100%;font-family:'Nunito',sans-serif;font-size:14.5px;padding:11px 13px;
+    border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);
+  }
+  .field input:focus, .field textarea:focus{outline:none;border-color:var(--terracota);}
+  .field textarea{resize:vertical;min-height:64px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media (max-width:480px){.row2{grid-template-columns:1fr;}}
+  .error-msg{color:var(--danger);font-size:12.5px;font-weight:700;margin-top:4px;display:none;}
+  .saved-note{font-size:12.5px;color:var(--teal-light);font-weight:700;margin-top:2px;min-height:16px;}
+
+  .preview-col{position:sticky;top:20px;}
+  .stage{background:#EFE6D3;border-radius:16px;padding:26px 18px;display:flex;justify-content:center;}
+  .label-card{
+    width:300px;background:var(--cream);border:3px solid var(--terracota);border-radius:18px;
+    padding:18px 18px 16px;position:relative;
+  }
+  .label-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .label-logo{display:flex;align-items:center;gap:6px;}
+  .label-logo svg{width:26px;height:26px;}
+  .label-logo span{font-family:'Fredoka',sans-serif;font-weight:700;font-size:15px;color:var(--teal);}
+  .label-alert{width:30px;height:30px;flex-shrink:0;}
+  .label-name{
+    font-family:'Fredoka',sans-serif;font-weight:600;font-size:19px;color:var(--terracota-dark);
+    text-align:center;margin:6px 0 12px;word-break:break-word;
+  }
+  .label-qr{display:flex;justify-content:center;margin-bottom:12px;}
+  .label-qr canvas, .label-qr img{border-radius:8px;}
+  .label-msg{text-align:center;font-size:12.5px;color:var(--teal);font-weight:700;line-height:1.4;padding:0 4px;}
+  .label-foot{
+    text-align:center;font-size:10.5px;color:#a99b82;margin-top:10px;font-weight:700;
+    letter-spacing:.3px;text-transform:uppercase;
+  }
+
+  .btn{
+    width:100%;font-family:'Fredoka',sans-serif;font-weight:600;font-size:14.5px;padding:13px 14px;
+    border-radius:11px;border:none;cursor:pointer;margin-top:12px;transition:transform .1s, opacity .15s;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{background:var(--terracota);color:#fff;}
+  .btn-primary:hover{background:var(--terracota-dark);}
+  .btn-secondary{background:#fff;color:var(--teal);border:1.5px solid var(--teal);}
+  .btn-secondary:hover{background:#f2ede1;}
+  .btn-ghost{background:none;color:var(--teal-light);border:1.5px dashed var(--line);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  .guide-hero{background:var(--teal);color:var(--cream);border-radius:16px;padding:22px 24px;margin-bottom:26px;}
+  .guide-hero h2{font-family:'Fredoka',sans-serif;font-size:20px;margin:0 0 6px;}
+  .guide-hero p{margin:0;font-size:14px;color:#CFE0DC;line-height:1.6;}
+
+  .section-title{font-family:'Fredoka',sans-serif;font-weight:600;font-size:17px;color:var(--terracota-dark);margin:0 0 12px;}
+
+  .icon-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:30px;}
+  .icon-card{border-radius:14px;padding:15px 15px 13px;}
+  .icon-card svg{width:24px;height:24px;}
+  .icon-card h3{font-family:'Fredoka',sans-serif;font-size:14px;margin:9px 0 4px;}
+  .icon-card p{font-size:12.5px;line-height:1.5;margin:0;}
+  .ic-terracota{background:#FCEFE9;}
+  .ic-terracota svg{color:var(--terracota-dark);}
+  .ic-terracota h3{color:var(--terracota-dark);}
+  .ic-terracota p{color:#7a4a3a;}
+  .ic-teal{background:#E7EFEC;}
+  .ic-teal svg{color:var(--teal);}
+  .ic-teal h3{color:var(--teal);}
+  .ic-teal p{color:#3d5654;}
+  .ic-gold{background:#FBF1E1;}
+  .ic-gold svg{color:#A87423;}
+  .ic-gold h3{color:#A87423;}
+  .ic-gold p{color:#7a5f33;}
+  .ic-gray{background:#F1EDE3;}
+  .ic-gray svg{color:#6b5f4c;}
+  .ic-gray h3{color:#6b5f4c;}
+  .ic-gray p{color:#5a5040;}
+
+  .callout{background:#FBF1E1;border:1.5px solid var(--gold);border-radius:14px;padding:15px 18px;margin-bottom:26px;font-size:13.5px;color:#6b5228;line-height:1.6;}
+  .callout b{color:#8a5c14;}
+
+  #gate{min-height:70vh;display:flex;align-items:center;justify-content:center;}
+  .gate-box{max-width:360px;width:100%;text-align:left;}
+  .gate-box label{display:block;font-size:13.5px;font-weight:700;color:var(--teal);margin-bottom:4px;}
+  .gate-hint{font-size:12.5px;color:#8a7f6e;margin:0 0 10px;}
+  .gate-box input{
+    width:100%;font-family:'Nunito',sans-serif;font-size:15px;padding:12px 14px;
+    border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);
+    letter-spacing:0.5px;
+  }
+  .gate-box input:focus{outline:none;border-color:var(--terracota);}
+  .gate-msg{font-size:13px;font-weight:700;margin-top:10px;min-height:18px;}
+  .gate-msg.err{color:var(--danger);}
+  .gate-msg.ok{color:var(--teal);}
+  .safety-box{background:#FCEFE9;border:1.5px solid var(--terracota);border-radius:14px;padding:18px 20px;margin-bottom:10px;}
+  .safety-box h3{font-family:'Fredoka',sans-serif;font-size:15px;color:var(--terracota-dark);margin:0 0 10px;}
+  .safety-box ul{margin:0;padding-left:18px;}
+  .safety-box li{font-size:13.5px;color:#5a4436;line-height:1.65;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="app-main" style="display:block;">
+
+  <div class="brand">
+    <svg class="lion-mark" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="32" cy="32" r="30" fill="#FDF6EC"/>
+      <g>
+        <circle cx="32" cy="34" r="12" fill="#E0A458"/>
+        <path d="M32 8 L37 20 L32 16 L27 20 Z" fill="#E0A458"/>
+        <path d="M32 8 L43 14 L36 22 Z" fill="#E0A458"/>
+        <path d="M32 8 L21 14 L28 22 Z" fill="#E0A458"/>
+        <path d="M10 26 L20 30 L18 38 Z" fill="#E0A458"/>
+        <path d="M54 26 L44 30 L46 38 Z" fill="#E0A458"/>
+        <path d="M12 44 L22 40 L24 47 Z" fill="#E0A458"/>
+        <path d="M52 44 L42 40 L40 47 Z" fill="#E0A458"/>
+        <ellipse cx="32" cy="36" rx="8.5" ry="7.5" fill="#E8836F"/>
+        <circle cx="28.5" cy="33" r="1.6" fill="#2D4F4F"/>
+        <circle cx="35.5" cy="33" r="1.6" fill="#2D4F4F"/>
+        <path d="M30 38 Q32 40 34 38" stroke="#2D4F4F" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+        <ellipse cx="32" cy="35.5" rx="1.6" ry="1.2" fill="#2D4F4F"/>
+      </g>
+    </svg>
+    <div>
+      <h1>Achei</h1>
+      <p>Etiquetas de identificação com QR Code</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="criar">Criar etiqueta</button>
+    <button class="tab-btn" data-tab="guia">Guia de uso</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-criar">
+
+    <div class="saved-bar" id="saved-bar">
+      <span class="saved-bar-label">Minhas etiquetas:</span>
+      <button class="chip-new" id="btn-new">+ Nova etiqueta</button>
+    </div>
+
+    <div class="creator">
+      <div class="form-col">
+        <div class="field">
+          <label>Nome da criança <span class="hint">(aparece na etiqueta)</span></label>
+          <input type="text" id="f-nome" maxlength="30" placeholder="Ex: Tiffany">
+        </div>
+        <div class="field">
+          <label>Nome do responsável <span class="hint">(opcional, aparece na mensagem)</span></label>
+          <input type="text" id="f-responsavel" maxlength="40" placeholder="Ex: Nayara (mãe)">
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>Telefone com WhatsApp</label>
+            <input type="tel" id="f-tel1" maxlength="20" placeholder="(19) 99999-0000">
+          </div>
+          <div class="field">
+            <label>Telefone extra <span class="hint">(opcional)</span></label>
+            <input type="tel" id="f-tel2" maxlength="20" placeholder="(19) 98888-0000">
+          </div>
+        </div>
+        <div class="field">
+          <label>Informação importante <span class="hint">(opcional — alergia, tipo sanguíneo, condição de saúde)</span></label>
+          <textarea id="f-info" maxlength="140" placeholder="Ex: Alérgica a amendoim"></textarea>
+        </div>
+        <div class="field">
+          <label>Mensagem exibida na etiqueta</label>
+          <input type="text" id="f-msg" maxlength="40" value="Se me encontrar, ligue para minha família">
+        </div>
+        <div class="error-msg" id="err">Preencha o nome da criança e um telefone com WhatsApp para gerar a etiqueta.</div>
+        <button class="btn btn-ghost" id="btn-save">Salvar esta etiqueta na lista</button>
+        <div class="saved-note" id="saved-note"></div>
+      </div>
+
+      <div class="preview-col">
+        <div class="stage">
+          <div class="label-card" id="label-card">
+            <div class="label-top">
+              <div class="label-logo">
+                <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#FDF6EC"/><g><circle cx="32" cy="34" r="12" fill="#E0A458"/><path d="M32 8 L37 20 L32 16 L27 20 Z" fill="#E0A458"/><path d="M32 8 L43 14 L36 22 Z" fill="#E0A458"/><path d="M32 8 L21 14 L28 22 Z" fill="#E0A458"/><path d="M10 26 L20 30 L18 38 Z" fill="#E0A458"/><path d="M54 26 L44 30 L46 38 Z" fill="#E0A458"/><path d="M12 44 L22 40 L24 47 Z" fill="#E0A458"/><path d="M52 44 L42 40 L40 47 Z" fill="#E0A458"/><ellipse cx="32" cy="36" rx="8.5" ry="7.5" fill="#E8836F"/><circle cx="28.5" cy="33" r="1.6" fill="#2D4F4F"/><circle cx="35.5" cy="33" r="1.6" fill="#2D4F4F"/><path d="M30 38 Q32 40 34 38" stroke="#2D4F4F" stroke-width="1.4" fill="none" stroke-linecap="round"/><ellipse cx="32" cy="35.5" rx="1.6" ry="1.2" fill="#2D4F4F"/></g></svg>
+                <span>Achei</span>
+              </div>
+              <svg class="label-alert" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="20" r="19" fill="#D94F3D"/>
+                <rect x="18" y="10" width="4" height="14" rx="2" fill="#FDF6EC"/>
+                <circle cx="20" cy="28.5" r="2.4" fill="#FDF6EC"/>
+              </svg>
+            </div>
+            <div class="label-name" id="prev-nome">Nome da criança</div>
+            <div class="label-qr"><div id="qrcode"></div></div>
+            <div class="label-msg" id="prev-msg">Se me encontrar, ligue para minha família</div>
+            <div class="label-foot">escaneie o QR Code</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btn-download">Baixar etiqueta (PNG)</button>
+        <button class="btn btn-secondary" id="btn-sheet">Baixar folha p/ impressão (8 un.)</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-guia">
+    <div class="guide-hero">
+      <h2>Como funciona a etiqueta Achei</h2>
+      <p>O QR Code abre direto uma conversa de WhatsApp com o responsável, já com uma mensagem pronta — quem encontrar a criança só precisa apertar enviar (ou ligar, já que o número aparece na conversa).</p>
+    </div>
+
+    <div class="section-title">O que é papel transfer?</div>
+    <div class="callout">É um papel especial que, com calor do ferro de passar, transfere o desenho impresso nele para dentro do tecido — é assim que se personaliza camiseta, boné, mochila, etc. Existem dois tipos: <b>para tecido claro/branco</b> (mais fino, mais barato) e <b>para tecido escuro/colorido</b> (tem uma base branca embutida, um pouco mais caro). Encontra-se facilmente em papelarias, lojas de armarinho e ateliês de estamparia.</div>
+
+    <div class="section-title">O que você vai precisar</div>
+    <div class="icon-steps">
+      <div class="icon-card ic-gray">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18h12v3H6zM6 14h12"/><rect x="6" y="9" width="12" height="9" rx="1"/></svg>
+        <h3>Papel transfer</h3>
+        <p>Escolha claro ou escuro conforme a cor da peça de roupa. Compre em papelaria ou loja de armarinho.</p>
+      </div>
+      <div class="icon-card ic-gray">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="16" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <h3>Impressora colorida</h3>
+        <p>Pode ser jato de tinta ou laser — a sua ou de uma papelaria.</p>
+      </div>
+      <div class="icon-card ic-terracota">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 20l1-9c0-3 2-6 6-6l5 3-3 3c-1 3-3 5-6 6z"/><circle cx="16" cy="8" r="1"/></svg>
+        <h3>Ferro de passar</h3>
+        <p>Um ferro doméstico comum já é suficiente.</p>
+      </div>
+      <div class="icon-card ic-teal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.5 15.5M14 14.5l6 6M8.5 8.5L12 12"/></svg>
+        <h3>Tesoura</h3>
+        <p>Para recortar a etiqueta rente ao desenho.</p>
+      </div>
+    </div>
+
+    <div class="section-title">Passo a passo — do arquivo à etiqueta pronta</div>
+    <div class="icon-steps">
+      <div class="icon-card ic-gold">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+        <h3>1. Gere e baixe o arquivo</h3>
+        <p>Na aba "Criar etiqueta", preencha os dados e baixe a etiqueta única ou a folha com 8 unidades.</p>
+      </div>
+      <div class="icon-card ic-teal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
+        <h3>2. Escolha onde imprimir</h3>
+        <p>Tem impressora em casa? Copie o arquivo para um pendrive. Se não tiver, mande o arquivo pelo WhatsApp ou e-mail para uma papelaria perto de você e peça para imprimir em papel transfer.</p>
+      </div>
+      <div class="icon-card ic-terracota">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12h8M8 16h5"/></svg>
+        <h3>3. Peça para imprimir no transfer</h3>
+        <p>Avise que é papel transfer (não papel comum) e pergunte se precisa espelhar a imagem — depende da marca do papel usado na papelaria.</p>
+      </div>
+    </div>
+
+    <div class="callout"><b>Sobre o espelhamento:</b> depende da marca do papel. Papel para tecido claro/branco quase sempre pede para espelhar a imagem antes de imprimir. Papel para tecido escuro/colorido varia — algumas marcas pedem sem espelhar. Confira sempre a embalagem do papel usado, ou pergunte na papelaria.</div>
+
+    <div class="section-title">Depois de impresso: aplicando na roupa</div>
+    <div class="icon-steps">
+      <div class="icon-card ic-teal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.5 15.5M14 14.5l6 6M8.5 8.5L12 12"/></svg>
+        <h3>1. Recorte rente</h3>
+        <p>Corte bem próximo ao desenho, sem sobrar papel em branco ao redor.</p>
+      </div>
+      <div class="icon-card ic-terracota">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 20l1-9c0-3 2-6 6-6l5 3-3 3c-1 3-3 5-6 6z"/><circle cx="16" cy="8" r="1"/></svg>
+        <h3>2. Pré-aqueça o tecido</h3>
+        <p>Ferro quente, sem vapor, por 10 segundos no local — tira a umidade e ajuda a fixar.</p>
+      </div>
+      <div class="icon-card ic-gray">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 8v4l3 2"/></svg>
+        <h3>3. Posicione virada para baixo</h3>
+        <p>O lado impresso deve encostar no tecido — a imagem some de vista, é assim mesmo.</p>
+      </div>
+      <div class="icon-card ic-terracota">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 20l1-9c0-3 2-6 6-6l5 3-3 3c-1 3-3 5-6 6z"/><circle cx="16" cy="8" r="1"/></svg>
+        <h3>4. Passe com pressão firme</h3>
+        <p>Sem vapor, do centro para as bordas, por cerca de 30 a 40 segundos.</p>
+      </div>
+      <div class="icon-card ic-gold">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        <h3>5. Retire no tempo certo</h3>
+        <p>Frio ou quente — depende da marca do papel. Confira a embalagem antes de puxar.</p>
+      </div>
+      <div class="icon-card ic-teal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z"/></svg>
+        <h3>6. Teste o QR Code</h3>
+        <p>Escaneie a etiqueta já fixada para confirmar que não distorceu no processo.</p>
+      </div>
+      <div class="icon-card ic-gray">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 4 6 7 6 11a6 6 0 01-12 0c0-4 3-7 6-11z"/></svg>
+        <h3>Cuidados de lavagem</h3>
+        <p>Espere 24h, lave do avesso e evite passar o ferro direto sobre a etiqueta depois.</p>
+      </div>
+    </div>
+
+    <div class="safety-box">
+      <h3>Segurança em primeiro lugar</h3>
+      <ul>
+        <li>Nunca coloque o endereço de casa ou da escola na etiqueta — apenas telefone e, se quiser, o nome do responsável.</li>
+        <li>Use um número com WhatsApp ativo, assim quem encontrar a criança consegue mandar mensagem na hora.</li>
+        <li>Combine com a criança que ela pode mostrar a etiqueta para um adulto de confiança se ficar perdida.</li>
+        <li>Refaça a etiqueta sempre que o telefone do responsável mudar — abra "Minhas etiquetas", edite e baixe de novo.</li>
+      </ul>
+    </div>
+  </div>
+
+  </div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const STORAGE_KEY = 'achei_labels_v1';
+let currentId = null;
+
+function loadLabels(){
+  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }catch(e){ return []; }
+}
+function saveLabels(list){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+
+function getFormData(){
+  return {
+    nome: $('f-nome').value.trim(),
+    responsavel: $('f-responsavel').value.trim(),
+    tel1: $('f-tel1').value.trim(),
+    tel2: $('f-tel2').value.trim(),
+    info: $('f-info').value.trim(),
+    msg: $('f-msg').value.trim()
+  };
+}
+function fillForm(data){
+  $('f-nome').value = data.nome || '';
+  $('f-responsavel').value = data.responsavel || '';
+  $('f-tel1').value = data.tel1 || '';
+  $('f-tel2').value = data.tel2 || '';
+  $('f-info').value = data.info || '';
+  $('f-msg').value = data.msg || 'Se me encontrar, ligue para minha família';
+}
+
+function renderSavedBar(){
+  const list = loadLabels();
+  const bar = $('saved-bar');
+  bar.querySelectorAll('.chip').forEach(c=>c.remove());
+  list.forEach(item=>{
+    const chip = document.createElement('div');
+    chip.className = 'chip' + (item.id === currentId ? ' active' : '');
+    chip.innerHTML = '<span>' + (item.nome || 'Sem nome') + '</span><span class="x" data-id="'+item.id+'">&times;</span>';
+    chip.addEventListener('click', (e)=>{
+      if(e.target.classList.contains('x')) return;
+      currentId = item.id;
+      fillForm(item);
+      renderPreview();
+      renderSavedBar();
+    });
+    chip.querySelector('.x').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const updated = loadLabels().filter(l=>l.id !== item.id);
+      saveLabels(updated);
+      if(currentId === item.id){ currentId = null; }
+      renderSavedBar();
+    });
+    bar.insertBefore(chip, $('btn-new'));
+  });
+}
+
+function buildWhatsAppLink(){
+  const d = getFormData();
+  let digits = d.tel1.replace(/\D/g,'');
+  if(digits && !digits.startsWith('55') && digits.length <= 11){ digits = '55' + digits; }
+  let text = 'Oi! Encontrei uma criança usando a etiqueta Achei.';
+  if(d.nome) text += ' Nome: ' + d.nome + '.';
+  if(d.info) text += ' Informação importante: ' + d.info + '.';
+  text += ' Podemos conversar?';
+  const encoded = encodeURIComponent(text);
+  return digits ? ('https://wa.me/' + digits + '?text=' + encoded) : ('https://wa.me/?text=' + encoded);
+}
+
+function renderPreview(){
+  const d = getFormData();
+  $('prev-nome').textContent = d.nome || 'Nome da criança';
+  $('prev-msg').textContent = d.msg || 'Se me encontrar, ligue para minha família';
+
+  const valid = !!(d.nome && d.tel1);
+  $('btn-download').disabled = !valid;
+  $('btn-sheet').disabled = !valid;
+  $('btn-save').disabled = !valid;
+
+  const qrEl = $('qrcode');
+  qrEl.innerHTML = '';
+  new QRCode(qrEl, {
+    text: buildWhatsAppLink(),
+    width: 150,
+    height: 150,
+    colorDark: '#2D4F4F',
+    colorLight: '#FDF6EC',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+}
+
+['f-nome','f-responsavel','f-tel1','f-tel2','f-info','f-msg'].forEach(id=>{
+  $(id).addEventListener('input', renderPreview);
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    $('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+function checkRequired(){
+  const d = getFormData();
+  if(!d.nome || !d.tel1){
+    $('err').style.display = 'block';
+    return false;
+  }
+  $('err').style.display = 'none';
+  return true;
+}
+
+function persistCurrent(){
+  if(!checkRequired()) return null;
+  const d = getFormData();
+  const list = loadLabels();
+  if(!currentId){
+    currentId = 'lbl_' + Date.now();
+    list.push(Object.assign({id: currentId}, d));
+  } else {
+    const idx = list.findIndex(l=>l.id === currentId);
+    if(idx >= 0){ list[idx] = Object.assign({id: currentId}, d); }
+    else{ list.push(Object.assign({id: currentId}, d)); }
+  }
+  saveLabels(list);
+  renderSavedBar();
+  return currentId;
+}
+
+$('btn-save').addEventListener('click', ()=>{
+  const id = persistCurrent();
+  if(id){
+    $('saved-note').textContent = 'Etiqueta salva na sua lista.';
+    setTimeout(()=>{ $('saved-note').textContent=''; }, 2500);
+  }
+});
+
+$('btn-new').addEventListener('click', ()=>{
+  currentId = null;
+  fillForm({});
+  renderPreview();
+  renderSavedBar();
+});
+
+$('btn-download').addEventListener('click', ()=>{
+  if(!checkRequired()) return;
+  persistCurrent();
+  const btn = $('btn-download');
+  btn.textContent = 'Gerando...';
+  html2canvas($('label-card'), {scale:3, backgroundColor:'#FDF6EC'}).then(canvas=>{
+    const link = document.createElement('a');
+    link.download = 'etiqueta-achei-' + ($('f-nome').value.trim().toLowerCase().replace(/\s+/g,'-') || 'crianca') + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    btn.textContent = 'Baixar etiqueta (PNG)';
+  });
+});
+
+$('btn-sheet').addEventListener('click', ()=>{
+  if(!checkRequired()) return;
+  persistCurrent();
+  const btn = $('btn-sheet');
+  btn.textContent = 'Gerando folha...';
+
+  const sheet = document.createElement('div');
+  sheet.style.position = 'fixed';
+  sheet.style.left = '-9999px';
+  sheet.style.top = '0';
+  sheet.style.width = '900px';
+  sheet.style.padding = '20px';
+  sheet.style.background = '#FDF6EC';
+  sheet.style.display = 'grid';
+  sheet.style.gridTemplateColumns = 'repeat(2, 1fr)';
+  sheet.style.gap = '20px';
+
+  const original = $('label-card');
+  for(let i=0;i<8;i++){
+    sheet.appendChild(original.cloneNode(true));
+  }
+  document.body.appendChild(sheet);
+
+  html2canvas(sheet, {scale:2, backgroundColor:'#FDF6EC'}).then(canvas=>{
+    const link = document.createElement('a');
+    link.download = 'folha-etiquetas-achei-8un.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    document.body.removeChild(sheet);
+    btn.textContent = 'Baixar folha p/ impressão (8 un.)';
+  });
+});
+
+renderSavedBar();
+renderPreview();
+</script>
+</body>
+</html>
