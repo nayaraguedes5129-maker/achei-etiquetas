@@ -101,31 +101,34 @@
   .stage{background:#EFE6D3;border-radius:16px;padding:26px 18px;display:flex;justify-content:center;}
   /* Etiqueta: compacta, suave e unissex. O QR permanece grande para leitura rápida. */
   .label-card{
-    width:170px;background:#FFFDF8;border:2px solid #D9B8A5;border-radius:13px;
-    padding:6px 5px 6px;position:relative;box-shadow:0 5px 12px rgba(80,65,50,.10);
+    width:170px;background:#FFFDF8;border:2px solid #D8AE9B;border-radius:14px;
+    padding:7px 5px 6px;position:relative;box-shadow:0 6px 14px rgba(80,65,50,.11);
     box-sizing:border-box;
   }
-  .label-top{display:flex;align-items:center;justify-content:center;margin-bottom:3px;position:relative;min-height:24px;}
+  .label-top{display:flex;align-items:center;justify-content:flex-start;margin-bottom:4px;position:relative;min-height:25px;padding:0 5px;}
   .label-logo{display:flex;align-items:center;gap:4px;}
-  .label-bear{width:22px;height:22px;display:block;flex-shrink:0;}
-  .label-logo span{font-family:'Fredoka',sans-serif;font-weight:700;font-size:13px;color:#365B5B;letter-spacing:.1px;}
+  .label-bear{width:23px;height:23px;display:block;flex-shrink:0;}
+  .label-logo span{font-family:'Fredoka',sans-serif;font-weight:700;font-size:13.5px;color:#365B5B;letter-spacing:.1px;}
   .label-logo small{font-family:'Nunito',sans-serif;font-size:7px;font-weight:800;letter-spacing:1px;color:#A37B67;display:block;margin-top:-2px;}
-  .label-spark{position:absolute;right:4px;top:2px;color:#D4B7A3;font-size:11px;line-height:1;}
+  .label-spark{position:absolute;right:7px;top:1px;color:#D4B7A3;font-size:11px;line-height:1;}
   .label-name{
     font-family:'Fredoka',sans-serif;font-weight:600;font-size:14px;color:#4D5752;
-    text-align:center;margin:2px 8px 5px;word-break:break-word;line-height:1.15;
-    background:#EEF0E7;border-radius:10px;padding:3px 5px;
+    text-align:center;margin:2px 9px 5px;word-break:break-word;line-height:1.15;
+    background:#EEF0E7;border-radius:11px;padding:4px 23px 4px 8px;position:relative;
   }
+  .label-name::after{content:'♥';position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;color:#C99B8C;}
   .label-qr{display:flex;justify-content:center;margin-bottom:5px;}
   .label-qr canvas, .label-qr img{border-radius:2px;display:block;}
   .label-msg{
-    text-align:center;font-family:'Nunito',sans-serif;font-size:9.3px;color:#465D59;font-weight:800;
-    line-height:1.2;padding:4px 5px;background:#F7E6DD;border-radius:9px;margin:0 2px;
+    text-align:center;font-family:'Nunito',sans-serif;font-size:9.1px;color:#465D59;font-weight:800;
+    line-height:1.18;padding:5px 5px;background:#F7E6DD;border-radius:10px;margin:0 2px;
   }
   .label-brand{
     text-align:center;font-family:'Nunito',sans-serif;font-size:8px;color:#A36F59;margin-top:4px;font-weight:800;
-    letter-spacing:.1px;
+    letter-spacing:.1px;position:relative;padding:0 18px;
   }
+  .label-brand::before,.label-brand::after{content:'♥';position:absolute;top:50%;transform:translateY(-50%);font-size:8px;color:#C8BDB0;}
+  .label-brand::before{left:6px;} .label-brand::after{right:6px;}
 
   .btn{
     width:100%;font-family:'Fredoka',sans-serif;font-weight:600;font-size:14.5px;padding:13px 14px;
