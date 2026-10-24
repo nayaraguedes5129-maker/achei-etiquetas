@@ -198,6 +198,9 @@
 
   <div class="tab-panel active" id="tab-criar">
 
+    <div class="usage-counter" id="usage-counter" style="margin:0 0 12px;padding:10px 14px;border-radius:12px;background:#f5eee4;color:#2A211B;font-weight:800;text-align:center;">
+      Etiquetas geradas: <span id="usage-count">0</span> de 14
+    </div>
     <div class="saved-bar" id="saved-bar">
       <span class="saved-bar-label">Minhas etiquetas:</span>
       <button class="chip-new" id="btn-new">+ Nova etiqueta</button>
@@ -375,7 +378,40 @@
 <script>
 const $ = id => document.getElementById(id);
 const STORAGE_KEY = 'achei_labels_v1';
+const USAGE_KEY = 'achei_generated_count_v1';
+const LABEL_LIMIT = 14;
 let currentId = null;
+
+function getGeneratedCount(){
+  const n = parseInt(localStorage.getItem(USAGE_KEY) || '0', 10);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+function remainingLabels(){ return Math.max(0, LABEL_LIMIT - getGeneratedCount()); }
+function updateUsageCounter(){
+  const count = getGeneratedCount();
+  const countEl = $('usage-count');
+  if(countEl) countEl.textContent = count;
+  const box = $('usage-counter');
+  if(box){
+    box.innerHTML = count >= LABEL_LIMIT
+      ? 'Limite atingido: você já gerou 14 de 14 etiquetas.'
+      : 'Etiquetas geradas: <span id="usage-count">' + count + '</span> de 14. Restam ' + (LABEL_LIMIT-count) + '.';
+  }
+  const locked = count >= LABEL_LIMIT;
+  $('btn-download').disabled = locked || !($('f-nome').value.trim() && $('f-tel1').value.trim());
+  $('btn-sheet').disabled = locked || remainingLabels() < 8 || !($('f-nome').value.trim() && $('f-tel1').value.trim());
+  if(locked){ $('btn-download').title = 'Você já atingiu o limite de 14 etiquetas.'; $('btn-sheet').title = 'Você já atingiu o limite de 14 etiquetas.'; }
+}
+function consumeLabels(amount){
+  const count = getGeneratedCount();
+  if(count + amount > LABEL_LIMIT){
+    alert('Você atingiu o limite de 14 etiquetas do plano básico.');
+    return false;
+  }
+  localStorage.setItem(USAGE_KEY, String(count + amount));
+  updateUsageCounter();
+  return true;
+}
 
 function loadLabels(){
   try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }catch(e){ return []; }
@@ -461,6 +497,7 @@ function renderPreview(){
     colorLight: '#FFFFFF',
     correctLevel: QRCode.CorrectLevel.H
   });
+  updateUsageCounter();
 }
 
 ['f-nome','f-responsavel','f-tel1','f-tel2','f-info','f-msg'].forEach(id=>{
@@ -520,6 +557,7 @@ $('btn-new').addEventListener('click', ()=>{
 
 $('btn-download').addEventListener('click', ()=>{
   if(!checkRequired()) return;
+  if(remainingLabels() < 1){ alert('Você já atingiu o limite de 14 etiquetas do plano básico.'); updateUsageCounter(); return; }
   persistCurrent();
   const btn = $('btn-download');
   btn.textContent = 'Gerando...';
@@ -528,12 +566,14 @@ $('btn-download').addEventListener('click', ()=>{
     link.download = 'etiqueta-achei-' + ($('f-nome').value.trim().toLowerCase().replace(/\s+/g,'-') || 'crianca') + '.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
+    consumeLabels(1);
     btn.textContent = 'Baixar etiqueta (PNG)';
   });
 });
 
 $('btn-sheet').addEventListener('click', ()=>{
   if(!checkRequired()) return;
+  if(remainingLabels() < 8){ alert('Para baixar uma folha com 8 etiquetas, você precisa ter pelo menos 8 etiquetas restantes. No momento restam ' + remainingLabels() + '.'); updateUsageCounter(); return; }
   persistCurrent();
   const btn = $('btn-sheet');
   btn.textContent = 'Gerando folha...';
@@ -560,6 +600,7 @@ $('btn-sheet').addEventListener('click', ()=>{
     link.download = 'folha-etiquetas-achei-8un.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
+    consumeLabels(8);
     document.body.removeChild(sheet);
     btn.textContent = 'Baixar folha p/ impressão (8 un.)';
   });
@@ -567,6 +608,7 @@ $('btn-sheet').addEventListener('click', ()=>{
 
 renderSavedBar();
 renderPreview();
+updateUsageCounter();
 </script>
 </body>
 </html>
