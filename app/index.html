@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js"></script>
 <style>
   :root{
     --terracota:#C2185B;       /* magenta da marca */
@@ -115,7 +116,30 @@
   .label-msg{display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Nunito',sans-serif;font-size:10.5px;color:#205844;font-weight:800;line-height:1.22;padding:8px 10px;background:#FCE7EF;border:1px solid #F0CEDC;border-radius:15px;min-height:39px;}
   .label-msg-heart{width:13px;height:13px;flex:0 0 13px;margin:0 5px;}
   .label-foot{display:none;}
-  .label-brand{text-align:center;font-family:'Nunito',sans-serif;font-size:9px;color:#007A52;margin-top:7px;font-weight:800;letter-spacing:.15px;}
+  .label-brand{text-align:center;font-family:'Nunito',sans-serif;font-size:11px;color:#007A52;font-weight:800;letter-spacing:.15px;line-height:12px;margin:0;}
+  /* Mesma identidade, com proporção fixa de 35 × 45 mm para impressão. */
+  .label-card{width:238px;height:306px;flex:0 0 238px;box-shadow:none;border:1.5px solid #E7A8C2;border-radius:13px;padding:6px 8px;display:grid;grid-template-rows:28px 29px 174px 36px 12px;gap:3px;background:#fff;overflow:hidden;}
+  .label-top{min-height:0;margin:0;}
+  .label-logo{gap:5px;}
+  .label-bear{width:25px;height:25px;flex-basis:25px;}
+  .label-logo-text .achei{font-size:17px;}
+  .label-logo-text .etiquetas{font-size:7px;letter-spacing:1.15px;margin-top:2px;}
+  .label-sparkle{width:13px;height:13px;}
+  .label-name{height:29px;min-height:0;margin:0;padding:2px 6px;gap:5px;font-size:15px;line-height:1.02;overflow:hidden;}
+  .label-name span{overflow-wrap:anywhere;min-width:0;}
+  .label-name-heart{width:12px;height:12px;flex-basis:12px;}
+  .label-qr{margin:0;align-items:center;}
+  #qrcode{width:174px;height:174px;display:grid;place-items:center;background:#fff;font-size:12px;text-align:center;color:var(--teal);}
+  #qrcode canvas{width:174px;height:174px;image-rendering:pixelated;}
+  .label-msg{padding:3px 5px;min-height:0;height:36px;line-height:1.12;font-size:11px;border-radius:10px;}
+  .label-msg-heart{width:10px;height:10px;flex:0 0 10px;margin:0 3px;}
+  .print-note{font-size:12px;line-height:1.45;color:var(--teal);text-align:center;margin:9px 0 0;}
+  .print-options{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:13px;font-weight:800;color:var(--teal);}
+  .print-options select{padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);font:inherit;}
+  .print-options label{display:flex;align-items:center;gap:5px;}
+  .qr-test{display:block;text-align:center;color:var(--teal);font-size:13px;font-weight:800;margin-top:10px;}
+  .qr-test[hidden]{display:none;}
+  .privacy-note{font-size:12px;line-height:1.45;color:var(--teal);margin-top:6px;}
 
   .btn{
     width:100%;font-family:'Fredoka',sans-serif;font-weight:600;font-size:14.5px;padding:13px 14px;
@@ -210,7 +234,7 @@
     <div class="creator">
       <div class="form-col">
         <div class="field">
-          <label>Nome da criança <span class="hint">(aparece na etiqueta)</span></label>
+          <label>Nome ou apelido da criança <span class="hint">(aparece na etiqueta)</span></label>
           <input type="text" id="f-nome" maxlength="30" placeholder="Ex: Tiffany">
         </div>
         <div class="field">
@@ -229,13 +253,14 @@
         </div>
         <div class="field">
           <label>Informação importante <span class="hint">(opcional — alergia, tipo sanguíneo, condição de saúde)</span></label>
-          <textarea id="f-info" maxlength="140" placeholder="Ex: Alérgica a amendoim"></textarea>
+          <textarea id="f-info" maxlength="140" placeholder="Ex: Preciso de ajuda para me comunicar"></textarea>
+          <p class="privacy-note">O QR Code pode ser lido por qualquer pessoa. Informe somente o necessário; não inclua endereço, escola, documentos ou dados de saúde desnecessários.</p>
         </div>
         <div class="field">
           <label>Mensagem exibida na etiqueta</label>
           <input type="text" id="f-msg" maxlength="40" value="Se me encontrar, fale com minha mãe">
         </div>
-        <div class="error-msg" id="err">Preencha o nome da criança e um telefone com WhatsApp para gerar a etiqueta.</div>
+        <div class="error-msg" id="err" role="alert">Preencha o nome ou apelido da criança e um telefone brasileiro válido com DDD.</div>
         <button class="btn btn-ghost" id="btn-save">Salvar esta etiqueta na lista</button>
         <div class="saved-note" id="saved-note"></div>
       </div>
@@ -262,8 +287,15 @@
             <div class="label-brand">@acheietiquetas</div>
           </div>
         </div>
+        <p class="print-note"><strong>Modelo compacto: 3,5 × 4,5 cm.</strong><br>Use o PDF em tamanho real para imprimir.</p>
+        <a class="qr-test" id="qr-test" target="_blank" rel="noopener noreferrer" hidden>Conferir contato no WhatsApp ↗</a>
         <button class="btn btn-primary" id="btn-download">Baixar etiqueta (PNG)</button>
-        <button class="btn btn-secondary" id="btn-sheet">Baixar folha p/ impressão (8 un.)</button>
+        <div class="print-options">
+          <label for="sheet-qty">Quantidade na folha: <select id="sheet-qty" aria-label="Quantidade de etiquetas"></select></label>
+          <label><input type="checkbox" id="sheet-mirror"> Espelhar para transfer</label>
+        </div>
+        <button class="btn btn-secondary" id="btn-sheet">Baixar folha A4 (PDF)</button>
+        <p class="print-note" id="download-note" role="status">Imprima o PDF em 100% (tamanho real), sem ajustar à página. Confira se o papel exige espelhamento e teste o QR após aplicar.</p>
       </div>
     </div>
   </div>
@@ -306,7 +338,7 @@
       <div class="icon-card ic-gold">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
         <h3>1. Gere e baixe o arquivo</h3>
-        <p>Na aba "Criar etiqueta", preencha os dados e baixe a etiqueta única ou a folha com 8 unidades.</p>
+        <p>Na aba "Criar etiqueta", preencha os dados e baixe a etiqueta única ou a folha A4 em PDF com a quantidade desejada, até o limite restante. Imprima em 100% (tamanho real), sem ajustar à página.</p>
       </div>
       <div class="icon-card ic-teal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
@@ -337,7 +369,7 @@
       <div class="icon-card ic-gray">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 8v4l3 2"/></svg>
         <h3>3. Posicione virada para baixo</h3>
-        <p>O lado impresso deve encostar no tecido — a imagem some de vista, é assim mesmo.</p>
+        <p>Confira na embalagem o lado correto de posicionamento; a orientação varia conforme o tipo de papel transfer.</p>
       </div>
       <div class="icon-card ic-terracota">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 20l1-9c0-3 2-6 6-6l5 3-3 3c-1 3-3 5-6 6z"/><circle cx="16" cy="8" r="1"/></svg>
@@ -382,6 +414,8 @@ const STORAGE_KEY = 'achei_labels_v1';
 const USAGE_KEY = 'achei_generated_count_v1';
 const LABEL_LIMIT = 14;
 let currentId = null;
+let busy = false;
+let qrReady = false;
 
 function getGeneratedCount(){
   const n = parseInt(localStorage.getItem(USAGE_KEY) || '0', 10);
@@ -398,10 +432,22 @@ function updateUsageCounter(){
       ? 'Limite atingido: você já gerou 14 de 14 etiquetas.'
       : 'Etiquetas geradas: <span id="usage-count">' + count + '</span> de 14. Restam ' + (LABEL_LIMIT-count) + '.';
   }
-  const locked = count >= LABEL_LIMIT;
-  $('btn-download').disabled = locked || !($('f-nome').value.trim() && $('f-tel1').value.trim());
-  $('btn-sheet').disabled = locked || remainingLabels() < 8 || !($('f-nome').value.trim() && $('f-tel1').value.trim());
-  if(locked){ $('btn-download').title = 'Você já atingiu o limite de 14 etiquetas.'; $('btn-sheet').title = 'Você já atingiu o limite de 14 etiquetas.'; }
+  const remaining = remainingLabels();
+  const qty = $('sheet-qty');
+  const previous = Number(qty.value) || 8;
+  if (qty.options.length !== remaining) {
+    qty.replaceChildren();
+    for (let i = 1; i <= remaining; i++) qty.add(new Option(String(i), String(i)));
+    qty.value = String(Math.min(previous, remaining));
+  }
+  const valid = validForm() && qrReady;
+  const locked = remaining === 0;
+  qty.disabled = locked || busy;
+  $('sheet-mirror').disabled = locked || busy;
+  $('btn-download').disabled = locked || !valid || busy;
+  $('btn-sheet').disabled = locked || !valid || busy;
+  $('btn-download').title = $('btn-sheet').title = locked ? 'Você já atingiu o limite de 14 etiquetas.' : '';
+  if (!busy) $('btn-sheet').textContent = 'Baixar folha A4 (PDF)' + (remaining ? ' · ' + qty.value + ' un.' : '');
 }
 function consumeLabels(amount){
   const count = getGeneratedCount();
@@ -447,9 +493,11 @@ function renderSavedBar(){
   list.forEach(item=>{
     const chip = document.createElement('div');
     chip.className = 'chip' + (item.id === currentId ? ' active' : '');
-    chip.innerHTML = '<span>' + (item.nome || 'Sem nome') + '</span><span class="x" data-id="'+item.id+'">&times;</span>';
+    const name = document.createElement('span'); name.textContent = item.nome || 'Sem nome';
+    const remove = document.createElement('span'); remove.className = 'x'; remove.dataset.id = item.id; remove.textContent = '×';
+    chip.append(name, remove);
     chip.addEventListener('click', (e)=>{
-      if(e.target.classList.contains('x')) return;
+      if(busy || e.target.classList.contains('x')) return;
       currentId = item.id;
       fillForm(item);
       renderPreview();
@@ -457,6 +505,7 @@ function renderSavedBar(){
     });
     chip.querySelector('.x').addEventListener('click', (e)=>{
       e.stopPropagation();
+      if(busy) return;
       const updated = loadLabels().filter(l=>l.id !== item.id);
       saveLabels(updated);
       if(currentId === item.id){ currentId = null; }
@@ -466,38 +515,65 @@ function renderSavedBar(){
   });
 }
 
+function normalizePhone(value){
+  const digits = value.replace(/\D/g,'');
+  if (/^[1-9]\d{9,10}$/.test(digits)) return '55' + digits;
+  if (/^55[1-9]\d{9,10}$/.test(digits)) return digits;
+  return '';
+}
+function validForm(){
+  const d = getFormData();
+  return !!(d.nome && normalizePhone(d.tel1) && (!d.tel2 || normalizePhone(d.tel2)));
+}
 function buildWhatsAppLink(){
   const d = getFormData();
-  let digits = d.tel1.replace(/\D/g,'');
-  if(digits && !digits.startsWith('55') && digits.length <= 11){ digits = '55' + digits; }
-  let text = 'Oi! Encontrei uma criança usando a etiqueta Achei.';
-  if(d.nome) text += ' Nome: ' + d.nome + '.';
-  if(d.info) text += ' Informação importante: ' + d.info + '.';
-  text += ' Podemos conversar?';
-  const encoded = encodeURIComponent(text);
-  return digits ? ('https://wa.me/' + digits + '?text=' + encoded) : ('https://wa.me/?text=' + encoded);
+  const digits = normalizePhone(d.tel1);
+  if (!digits) return '';
+  let text = 'Olá! Encontrei ' + (d.nome || 'uma criança') + ' com a etiqueta Achei.';
+  if(d.responsavel) text += ' Responsável: ' + d.responsavel + '.';
+  if(d.tel2) text += ' Contato extra: +' + normalizePhone(d.tel2) + '.';
+  if(d.info) text += ' Informação: ' + d.info + '.';
+  text += ' Pode me ajudar?';
+  return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(text);
 }
-
 function renderPreview(){
   const d = getFormData();
-  $('prev-nome').textContent = d.nome || 'Nome da criança';
+  $('prev-nome').querySelector('span').textContent = d.nome || 'Nome da criança';
   $('prev-msg').querySelector('span').textContent = d.msg || 'Se me encontrar, fale com minha mãe';
-
-  const valid = !!(d.nome && d.tel1);
-  $('btn-download').disabled = !valid;
-  $('btn-sheet').disabled = !valid;
+  const valid = validForm();
   $('btn-save').disabled = !valid;
-
   const qrEl = $('qrcode');
-  qrEl.innerHTML = '';
-  new QRCode(qrEl, {
-    text: buildWhatsAppLink(),
-    width: 150,
-    height: 150,
-    colorDark: '#000000',
-    colorLight: '#FFFFFF',
-    correctLevel: QRCode.CorrectLevel.H
-  });
+  qrEl.replaceChildren();
+  qrReady = false;
+  const test = $('qr-test');
+  test.hidden = true;
+  test.removeAttribute('href');
+  if (valid) {
+    try {
+      // QR real em alta resolução, sem distorção e com margem de quatro módulos.
+      const temporary = document.createElement('div');
+      const url = buildWhatsAppLink();
+      const generator = new QRCode(temporary, {text:url, width:174, height:174, correctLevel:QRCode.CorrectLevel.M});
+      const model = generator._oQRCode;
+      const n = model.getModuleCount();
+      const dot = 12, margin = 4;
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = (n + 2 * margin) * dot;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = '#000';
+      for (let row=0; row<n; row++) for (let col=0; col<n; col++)
+        if (model.isDark(row,col)) ctx.fillRect((col+margin)*dot,(row+margin)*dot,dot,dot);
+      qrEl.append(canvas);
+      qrReady = true;
+      test.href = url;
+      test.hidden = false;
+    } catch (e) {
+      qrEl.textContent = 'Não foi possível gerar o QR Code. Verifique os dados.';
+    }
+  } else {
+    qrEl.textContent = 'Preencha os dados para gerar o QR Code';
+  }
   updateUsageCounter();
 }
 
@@ -516,7 +592,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
 function checkRequired(){
   const d = getFormData();
-  if(!d.nome || !d.tel1){
+  if(!validForm() || !qrReady){
     $('err').style.display = 'block';
     return false;
   }
@@ -556,55 +632,78 @@ $('btn-new').addEventListener('click', ()=>{
   renderSavedBar();
 });
 
-$('btn-download').addEventListener('click', ()=>{
-  if(!checkRequired()) return;
-  if(remainingLabels() < 1){ alert('Você já atingiu o limite de 14 etiquetas do plano básico.'); updateUsageCounter(); return; }
+// A mesma imagem de alta resolução é reutilizada em toda a folha, sem clonar o canvas do QR.
+const LABEL_WIDTH_MM = 35;
+const LABEL_HEIGHT_MM = 45;
+const PDF_MARGIN_MM = 10;
+const PDF_GAP_MM = 4;
+async function captureLabel(){
+  if(document.fonts && document.fonts.ready) await document.fonts.ready;
+  return html2canvas($('label-card'), {scale:4, backgroundColor:'#FFFFFF', logging:false});
+}
+function mirrorCanvas(source){
+  const canvas = document.createElement('canvas'); canvas.width=source.width; canvas.height=source.height;
+  const ctx = canvas.getContext('2d'); ctx.translate(canvas.width,0); ctx.scale(-1,1); ctx.drawImage(source,0,0);
+  return canvas;
+}
+function saveDataUrl(dataUrl, filename){
+  const link = document.createElement('a');
+  link.href = dataUrl; link.download = filename; link.click();
+}
+function setBusy(value){
+  busy=value;
+  ['f-nome','f-responsavel','f-tel1','f-tel2','f-info','f-msg','btn-save','btn-new'].forEach(id=>$(id).disabled=value);
+  if(!value) $('btn-save').disabled=!validForm();
+  updateUsageCounter();
+  $('btn-download').textContent = value ? 'Gerando arquivo...' : 'Baixar etiqueta (PNG)';
+}
+$('sheet-qty').addEventListener('change',updateUsageCounter);
+$('btn-download').addEventListener('click', async ()=>{
+  if (busy || !checkRequired() || remainingLabels() < 1) return;
+  const name = getFormData().nome.toLowerCase().replace(/[^a-z0-9À-ÿ-]+/gi,'-');
   persistCurrent();
-  const btn = $('btn-download');
-  btn.textContent = 'Gerando...';
-  html2canvas($('label-card'), {scale:3, backgroundColor:'#FFF8FB'}).then(canvas=>{
-    const link = document.createElement('a');
-    link.download = 'etiqueta-achei-' + ($('f-nome').value.trim().toLowerCase().replace(/\s+/g,'-') || 'crianca') + '.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+  setBusy(true);
+  try {
+    const canvas = await captureLabel();
+    if (remainingLabels() < 1) throw Error('Limite atingido.');
+    saveDataUrl(canvas.toDataURL('image/png'), 'etiqueta-achei-' + name + '.png');
     consumeLabels(1);
-    btn.textContent = 'Baixar etiqueta (PNG)';
-  });
+    $('download-note').textContent = 'PNG baixado! Use o PDF para garantir o tamanho de 3,5 × 4,5 cm.';
+  } catch (e) {
+    $('download-note').textContent = 'Não foi possível baixar a etiqueta. Tente novamente.';
+  } finally {setBusy(false);}
 });
-
-$('btn-sheet').addEventListener('click', ()=>{
-  if(!checkRequired()) return;
-  if(remainingLabels() < 8){ alert('Para baixar uma folha com 8 etiquetas, você precisa ter pelo menos 8 etiquetas restantes. No momento restam ' + remainingLabels() + '.'); updateUsageCounter(); return; }
+$('btn-sheet').addEventListener('click', async ()=>{
+  if (busy || !checkRequired()) return;
+  const qty = Number($('sheet-qty').value);
+  if (!Number.isInteger(qty) || qty<1 || qty>remainingLabels()) return;
+  const mirrored = $('sheet-mirror').checked;
   persistCurrent();
-  const btn = $('btn-sheet');
-  btn.textContent = 'Gerando folha...';
-
-  const sheet = document.createElement('div');
-  sheet.style.position = 'fixed';
-  sheet.style.left = '-9999px';
-  sheet.style.top = '0';
-  sheet.style.width = '900px';
-  sheet.style.padding = '20px';
-  sheet.style.background = '#FFF8FB';
-  sheet.style.display = 'grid';
-  sheet.style.gridTemplateColumns = 'repeat(2, 1fr)';
-  sheet.style.gap = '20px';
-
-  const original = $('label-card');
-  for(let i=0;i<8;i++){
-    sheet.appendChild(original.cloneNode(true));
-  }
-  document.body.appendChild(sheet);
-
-  html2canvas(sheet, {scale:2, backgroundColor:'#FFF8FB'}).then(canvas=>{
-    const link = document.createElement('a');
-    link.download = 'folha-etiquetas-achei-8un.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-    consumeLabels(8);
-    document.body.removeChild(sheet);
-    btn.textContent = 'Baixar folha p/ impressão (8 un.)';
-  });
+  setBusy(true);
+  $('btn-sheet').textContent = 'Gerando PDF...';
+  try {
+    if (!window.jspdf || !window.jspdf.jsPDF) throw Error('PDF indisponível');
+    let canvas = await captureLabel();
+    if (mirrored) canvas = mirrorCanvas(canvas);
+    const image = canvas.toDataURL('image/png');
+    const pdf = new window.jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+    const maxCols = Math.floor((210 - 2*PDF_MARGIN_MM + PDF_GAP_MM)/(LABEL_WIDTH_MM + PDF_GAP_MM));
+    const cols = Math.min(4,maxCols);
+    const rows = Math.ceil(qty/cols);
+    const x0 = (210 - (cols*LABEL_WIDTH_MM+(cols-1)*PDF_GAP_MM))/2;
+    if (PDF_MARGIN_MM + rows*LABEL_HEIGHT_MM+(rows-1)*PDF_GAP_MM > 287) throw Error('Folha excedida');
+    for(let i=0;i<qty;i++){
+      const x=x0+(i%cols)*(LABEL_WIDTH_MM+PDF_GAP_MM);
+      const y=PDF_MARGIN_MM+Math.floor(i/cols)*(LABEL_HEIGHT_MM+PDF_GAP_MM);
+      pdf.addImage(image,'PNG',x,y,LABEL_WIDTH_MM,LABEL_HEIGHT_MM,'achei-label');
+    }
+    if (qty>remainingLabels()) throw Error('Limite atingido.');
+    pdf.save('achei-etiquetas-'+qty+'un'+(mirrored?'-espelhada':'')+'.pdf');
+    consumeLabels(qty);
+    $('download-note').textContent = 'PDF baixado! Imprima em tamanho real (100%). Teste a leitura após aplicar.';
+  } catch(e) {
+    $('download-note').textContent = 'Não foi possível gerar o PDF. Confira sua conexão e tente novamente.';
+  } finally {setBusy(false);}
 });
 
 renderSavedBar();
