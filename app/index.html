@@ -136,6 +136,9 @@
   .label-msg-heart{width:8px;height:8px;flex:0 0 8px;margin:0 2px;}
   .print-note{font-size:12px;line-height:1.45;color:var(--teal);text-align:center;margin:9px 0 0;}
   .print-options{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:13px;font-weight:800;color:var(--teal);}
+  .field select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit;}
+  .label-custom-icon{width:22px;height:22px;flex:0 0 22px;}
+  .label-top [hidden]{display:none;}
   .print-options select{padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);font:inherit;}
   .print-options label{display:flex;align-items:center;gap:5px;}
   .qr-test{display:block;text-align:center;color:var(--teal);font-size:13px;font-weight:800;margin-top:10px;}
@@ -235,7 +238,7 @@
     <div class="creator">
       <div class="form-col">
         <div class="field">
-          <label>Nome ou apelido da criança <span class="hint">(aparece na etiqueta)</span></label>
+          <label for="f-nome">Nome da pessoa ou do objeto <span class="hint">(aparece na etiqueta)</span></label>
           <input type="text" id="f-nome" maxlength="30" placeholder="Ex: Tiffany">
         </div>
         <div class="field">
@@ -261,7 +264,22 @@
           <label>Mensagem exibida na etiqueta</label>
           <input type="text" id="f-msg" maxlength="40" value="Se me encontrar, fale com minha mãe">
         </div>
-        <div class="error-msg" id="err" role="alert">Preencha o nome ou apelido da criança e um telefone brasileiro válido com DDD.</div>
+        <div class="row2">
+          <div class="field">
+            <label for="f-icon">Ícone da etiqueta</label>
+            <select id="f-icon"><option value="bear">Ursinho original</option><option value="book">Caderno</option><option value="phone">Celular</option><option value="star">Estrela</option><option value="none">Sem ícone</option></select>
+          </div>
+          <div class="field">
+            <label for="f-theme">Cor da moldura</label>
+            <select id="f-theme"><option value="pink">Rosa Achei</option><option value="green">Verde</option><option value="purple">Lilás</option><option value="neutral">Grafite</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-wa-message">Mensagem inicial no WhatsApp <span class="hint">(opcional)</span></label>
+          <textarea id="f-wa-message" maxlength="140" placeholder="Ex.: Oi! Encontrei seu caderno."></textarea>
+          <p class="privacy-note">Quem escaneia pode editar a mensagem, enviá-la e compartilhar a localização pelo WhatsApp.</p>
+        </div>
+        <div class="error-msg" id="err" role="alert">Preencha o nome da pessoa ou do objeto e um telefone brasileiro válido com DDD.</div>
         <button class="btn btn-ghost" id="btn-save">Salvar esta etiqueta na lista</button>
         <div class="saved-note" id="saved-note"></div>
       </div>
@@ -278,6 +296,7 @@
                   <circle cx="24" cy="32" r="2.7" fill="#3F3935"/><circle cx="40" cy="32" r="2.7" fill="#3F3935"/>
                   <ellipse cx="32" cy="38" rx="4" ry="3" fill="#3F3935"/><path d="M28 42 Q32 46 36 42" fill="none" stroke="#3F3935" stroke-width="2" stroke-linecap="round"/>
                 </svg>
+                <svg class="label-custom-icon" id="prev-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path/></svg>
                 <div class="label-logo-text"><span class="achei">Achei</span><span class="etiquetas">ETIQUETAS</span></div>
               </div>
               <svg class="label-sparkle" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2l1.7 7.3L21 11l-7.3 1.7L12 20l-1.7-7.3L3 11l7.3-1.7L12 2z" fill="#C2185B"/></svg>
@@ -334,6 +353,7 @@
       </div>
     </div>
 
+    <div class="callout"><b>Onde aplicar:</b> escolha um tecido liso ou uma área lisa e plana do objeto. Tricô, relevos e dobras podem dificultar a leitura. Em uma capinha transparente, coloque o QR Code voltado para fora e teste com a capinha no lugar. Para identificar o celular, cadastre outro número de contato.</div>
     <div class="section-title">Passo a passo — do arquivo à etiqueta pronta</div>
     <div class="icon-steps">
       <div class="icon-card ic-gold">
@@ -414,6 +434,12 @@ const $ = id => document.getElementById(id);
 const STORAGE_KEY = 'achei_labels_v1';
 const USAGE_KEY = 'achei_generated_count_v1';
 const LABEL_LIMIT = 14;
+const iconPaths = new Map([
+  ['book', 'M5 4h13v16H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2m0 12h12M8 8h6'],
+  ['phone', 'M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2m3 15h2'],
+  ['star', 'm12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2-5.5-2.9-5.5 2.9 1-6.2L3 9.6l6.2-.9z']
+]);
+const labelColors = new Map([['pink','#E7A8C2'], ['green','#00845F'], ['purple','#7955AA'], ['neutral','#39393F']]);
 let currentId = null;
 let busy = false;
 let qrReady = false;
@@ -475,7 +501,10 @@ function getFormData(){
     tel1: $('f-tel1').value.trim(),
     tel2: $('f-tel2').value.trim(),
     info: $('f-info').value.trim(),
-    msg: $('f-msg').value.trim()
+    msg: $('f-msg').value.trim(),
+    icon: $('f-icon').value,
+    theme: $('f-theme').value,
+    waMessage: $('f-wa-message').value.trim()
   };
 }
 function fillForm(data){
@@ -485,6 +514,9 @@ function fillForm(data){
   $('f-tel2').value = data.tel2 || '';
   $('f-info').value = data.info || '';
   $('f-msg').value = data.msg || 'Se me encontrar, fale com minha mãe';
+  $('f-icon').value = data.icon === 'none' || iconPaths.has(data.icon) ? data.icon : 'bear';
+  $('f-theme').value = labelColors.has(data.theme) ? data.theme : 'pink';
+  $('f-wa-message').value = data.waMessage || '';
 }
 
 function renderSavedBar(){
@@ -530,16 +562,29 @@ function buildWhatsAppLink(){
   const d = getFormData();
   const digits = normalizePhone(d.tel1);
   if (!digits) return '';
-  let text = 'Olá! Encontrei ' + (d.nome || 'uma criança') + ' com a etiqueta Achei.';
+  let text = d.waMessage || 'Olá! Encontrei ' + (d.nome || 'uma criança') + ' com a etiqueta Achei.';
   if(d.responsavel) text += ' Responsável: ' + d.responsavel + '.';
   if(d.tel2) text += ' Contato extra: +' + normalizePhone(d.tel2) + '.';
   if(d.info) text += ' Informação: ' + d.info + '.';
-  text += ' Pode me ajudar?';
+  if (!d.waMessage) text += ' Pode me ajudar?';
   return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(text);
 }
 function renderPreview(){
   const d = getFormData();
-  $('prev-nome').querySelector('span').textContent = d.nome || 'Nome da criança';
+  const card = $('label-card');
+  const color = labelColors.get(d.theme) || labelColors.get('pink');
+  const customIcon = $('prev-icon');
+  const path = iconPaths.get(d.icon);
+  card.style.borderColor = color;
+  card.querySelector('.label-bear').toggleAttribute('hidden', d.icon !== 'bear');
+  customIcon.toggleAttribute('hidden', !path);
+  customIcon.querySelector('path').setAttribute('d', path || '');
+  customIcon.setAttribute('stroke', d.theme === 'pink' ? '#C2185B' : color);
+  card.querySelectorAll('.label-sparkle, .label-name-heart, .label-msg-heart').forEach(icon => {
+    icon.toggleAttribute('hidden', d.icon === 'none');
+    icon.style.display = d.icon === 'none' ? 'none' : '';
+  });
+  $('prev-nome').querySelector('span').textContent = d.nome || 'Nome na etiqueta';
   $('prev-nome').style.fontSize = d.nome.length > 22 ? '11px' : '13px';
   $('prev-msg').querySelector('span').textContent = d.msg || 'Se me encontrar, fale com minha mãe';
   const valid = validForm();
@@ -579,7 +624,7 @@ function renderPreview(){
   updateUsageCounter();
 }
 
-['f-nome','f-responsavel','f-tel1','f-tel2','f-info','f-msg'].forEach(id=>{
+['f-nome','f-responsavel','f-tel1','f-tel2','f-info','f-msg','f-icon','f-theme','f-wa-message'].forEach(id=>{
   $(id).addEventListener('input', renderPreview);
 });
 
