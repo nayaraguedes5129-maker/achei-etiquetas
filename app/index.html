@@ -116,23 +116,24 @@
   .label-msg{display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Nunito',sans-serif;font-size:10.5px;color:#205844;font-weight:800;line-height:1.22;padding:8px 10px;background:#FCE7EF;border:1px solid #F0CEDC;border-radius:15px;min-height:39px;}
   .label-msg-heart{width:13px;height:13px;flex:0 0 13px;margin:0 5px;}
   .label-foot{display:none;}
-  .label-brand{text-align:center;font-family:'Nunito',sans-serif;font-size:11px;color:#007A52;font-weight:800;letter-spacing:.15px;line-height:12px;margin:0;}
-  /* Mesma identidade, com proporção fixa de 35 × 45 mm para impressão. */
-  .label-card{width:238px;height:306px;flex:0 0 238px;box-shadow:none;border:1.5px solid #E7A8C2;border-radius:13px;padding:6px 8px;display:grid;grid-template-rows:28px 29px 174px 36px 12px;gap:3px;background:#fff;overflow:hidden;}
+  .label-brand{text-align:center;font-family:'Nunito',sans-serif;font-size:10.5px;color:#007A52;font-weight:800;letter-spacing:.1px;line-height:11px;margin:0;}
+  /* Mesma identidade, com proporção fixa de 30 × 40 mm para impressão. */
+  .label-card{width:204px;height:272px;flex:0 0 204px;box-shadow:none;border:1.2px solid #E7A8C2;border-radius:10px;padding:3px 4px;display:grid;grid-template-rows:24px 24px 170px 25px 11px;gap:2px;background:#fff;overflow:hidden;}
   .label-top{min-height:0;margin:0;}
   .label-logo{gap:5px;}
-  .label-bear{width:25px;height:25px;flex-basis:25px;}
-  .label-logo-text .achei{font-size:17px;}
-  .label-logo-text .etiquetas{font-size:7px;letter-spacing:1.15px;margin-top:2px;}
+   .label-bear{width:22px;height:22px;flex-basis:22px;}
+  .label-logo-text .achei{font-size:15px;}
+  .label-logo-text .etiquetas{font-size:6.5px;letter-spacing:1px;margin-top:1px;}
   .label-sparkle{width:13px;height:13px;}
-  .label-name{height:29px;min-height:0;margin:0;padding:2px 6px;gap:5px;font-size:15px;line-height:1.02;overflow:hidden;}
+  .label-name{height:24px;min-height:0;margin:0;padding:0 4px;gap:4px;font-size:13px;line-height:1;overflow:hidden;}
   .label-name span{overflow-wrap:anywhere;min-width:0;}
   .label-name-heart{width:12px;height:12px;flex-basis:12px;}
   .label-qr{margin:0;align-items:center;}
-  #qrcode{width:174px;height:174px;display:grid;place-items:center;background:#fff;font-size:12px;text-align:center;color:var(--teal);}
-  #qrcode canvas{width:174px;height:174px;image-rendering:pixelated;}
-  .label-msg{padding:3px 5px;min-height:0;height:36px;line-height:1.12;font-size:11px;border-radius:10px;}
-  .label-msg-heart{width:10px;height:10px;flex:0 0 10px;margin:0 3px;}
+  #qrcode{width:170px;height:170px;display:grid;place-items:center;background:#fff;font-size:12px;text-align:center;color:var(--teal);}
+  #qrcode canvas{width:170px;height:170px;image-rendering:pixelated;}
+  .label-msg{padding:1px 3px;min-height:0;height:25px;line-height:1.05;font-size:10.5px;border-radius:7px;}
+  .label-msg span{overflow-wrap:anywhere;min-width:0;}
+  .label-msg-heart{width:8px;height:8px;flex:0 0 8px;margin:0 2px;}
   .print-note{font-size:12px;line-height:1.45;color:var(--teal);text-align:center;margin:9px 0 0;}
   .print-options{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:13px;font-weight:800;color:var(--teal);}
   .print-options select{padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);font:inherit;}
@@ -287,7 +288,7 @@
             <div class="label-brand">@acheietiquetas</div>
           </div>
         </div>
-        <p class="print-note"><strong>Modelo compacto: 3,5 × 4,5 cm.</strong><br>Use o PDF em tamanho real para imprimir.</p>
+        <p class="print-note"><strong>Modelo compacto: 3 × 4 cm.</strong><br>Use o PDF em tamanho real para imprimir.</p>
         <a class="qr-test" id="qr-test" target="_blank" rel="noopener noreferrer" hidden>Conferir contato no WhatsApp ↗</a>
         <button class="btn btn-primary" id="btn-download">Baixar etiqueta (PNG)</button>
         <div class="print-options">
@@ -539,6 +540,7 @@ function buildWhatsAppLink(){
 function renderPreview(){
   const d = getFormData();
   $('prev-nome').querySelector('span').textContent = d.nome || 'Nome da criança';
+  $('prev-nome').style.fontSize = d.nome.length > 22 ? '11px' : '13px';
   $('prev-msg').querySelector('span').textContent = d.msg || 'Se me encontrar, fale com minha mãe';
   const valid = validForm();
   $('btn-save').disabled = !valid;
@@ -553,7 +555,7 @@ function renderPreview(){
       // QR real em alta resolução, sem distorção e com margem de quatro módulos.
       const temporary = document.createElement('div');
       const url = buildWhatsAppLink();
-      const generator = new QRCode(temporary, {text:url, width:174, height:174, correctLevel:QRCode.CorrectLevel.M});
+      const generator = new QRCode(temporary, {text:url, width:170, height:170, correctLevel:QRCode.CorrectLevel.M});
       const model = generator._oQRCode;
       const n = model.getModuleCount();
       const dot = 12, margin = 4;
@@ -633,8 +635,8 @@ $('btn-new').addEventListener('click', ()=>{
 });
 
 // A mesma imagem de alta resolução é reutilizada em toda a folha, sem clonar o canvas do QR.
-const LABEL_WIDTH_MM = 35;
-const LABEL_HEIGHT_MM = 45;
+const LABEL_WIDTH_MM = 30;
+const LABEL_HEIGHT_MM = 40;
 const PDF_MARGIN_MM = 10;
 const PDF_GAP_MM = 4;
 async function captureLabel(){
@@ -668,7 +670,7 @@ $('btn-download').addEventListener('click', async ()=>{
     if (remainingLabels() < 1) throw Error('Limite atingido.');
     saveDataUrl(canvas.toDataURL('image/png'), 'etiqueta-achei-' + name + '.png');
     consumeLabels(1);
-    $('download-note').textContent = 'PNG baixado! Use o PDF para garantir o tamanho de 3,5 × 4,5 cm.';
+    $('download-note').textContent = 'PNG baixado! Use o PDF para garantir o tamanho de 3 × 4 cm.';
   } catch (e) {
     $('download-note').textContent = 'Não foi possível baixar a etiqueta. Tente novamente.';
   } finally {setBusy(false);}
@@ -688,7 +690,7 @@ $('btn-sheet').addEventListener('click', async ()=>{
     const image = canvas.toDataURL('image/png');
     const pdf = new window.jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
     const maxCols = Math.floor((210 - 2*PDF_MARGIN_MM + PDF_GAP_MM)/(LABEL_WIDTH_MM + PDF_GAP_MM));
-    const cols = Math.min(4,maxCols);
+    const cols = Math.min(5,maxCols);
     const rows = Math.ceil(qty/cols);
     const x0 = (210 - (cols*LABEL_WIDTH_MM+(cols-1)*PDF_GAP_MM))/2;
     if (PDF_MARGIN_MM + rows*LABEL_HEIGHT_MM+(rows-1)*PDF_GAP_MM > 287) throw Error('Folha excedida');
