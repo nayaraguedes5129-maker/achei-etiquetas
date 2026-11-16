@@ -429,6 +429,7 @@ const STORAGE_KEY = 'achei_labels_v1';
 const API = 'https://achei-licencas.nayaraguedes5129.workers.dev';
 const TOKEN_KEY = 'achei_session_v2';
 const LABEL_LIMIT = 14; // máximo por folha, independentemente do saldo
+const LEGACY_QUOTA = 2147483647; // licença legada, sem limite prático de geração
 let token = '';
 let usage = {quota:0,used:0,remaining:0};
 try { token = sessionStorage.getItem(TOKEN_KEY) || ''; } catch(e){}
@@ -448,7 +449,7 @@ function setUsage(data){
 function updateUsageCounter(){
   const count=getGeneratedCount(), remaining=remainingLabels(), limit=Math.min(remaining,LABEL_LIMIT);
   $('usage-counter').textContent=token
-    ? (remaining===0 ? 'Limite atingido. ' : '')+'Etiquetas geradas: '+count+' de '+usage.quota+'. Restam '+remaining+'.'
+    ? (usage.quota===LEGACY_QUOTA ? 'Seu acesso é ilimitado. Você pode gerar quantas folhas precisar.' : (remaining===0 ? 'Limite atingido. ' : '')+'Etiquetas geradas: '+count+' de '+usage.quota+'. Restam '+remaining+'.')
     : 'Entre para consultar seu saldo.';
   const qty=$('sheet-qty'), previous=Number(qty.value)||8;
   if(qty.options.length!==limit){
