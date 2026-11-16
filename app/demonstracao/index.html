@@ -221,7 +221,7 @@
   <p>Não encontrou o código? Consulte o e-mail de confirmação ou <a href="https://consumer.hotmart.com/" target="_blank" rel="noopener noreferrer">suas compras na Hotmart</a>.</p>
 </section>
 <div id="app-main" style="display:none;">
-<div role="note" style="padding:14px;background:#FFF3DA;border:1px solid #EACB85;border-radius:12px;margin:0 0 16px;color:#533C16"><strong>Modo demonstração · Achei Etiquetas</strong><br>Use dados fictícios para explorar o aplicativo. O saldo é simulado; não há cobrança nem emissão de arquivos. <a href="https://acheietiquetas.com.br/app/novo/">Acesso de clientes</a></div>
+<div role="note" style="padding:14px;background:#FFF3DA;border:1px solid #EACB85;border-radius:12px;margin:0 0 16px;color:#533C16"><strong>Modo demonstração · Achei Etiquetas</strong><br>Use dados fictícios para explorar o aplicativo. O saldo é simulado. Você pode baixar amostras para conferir a impressão, mas o QR Code de teste não contém telefone. <a href="https://acheietiquetas.com.br/app/novo/">Acesso de clientes</a></div>
   <div style="text-align:right;margin-bottom:12px"><button type="button" id="license-exit" class="btn btn-secondary">Sair da minha conta</button></div>
 
   <div class="brand">
@@ -305,12 +305,12 @@
         </div>
         <p class="print-note"><strong>Modelo compacto: 3 × 4 cm.</strong><br>Use o PDF em tamanho real para imprimir.</p>
         <a class="qr-test" id="qr-test" target="_blank" rel="noopener noreferrer" hidden>Conferir contato no WhatsApp ↗</a>
-        <button class="btn btn-primary" id="btn-download">Simular etiqueta (PNG)</button>
+        <button class="btn btn-primary" id="btn-download">Baixar amostra (PNG)</button>
         <div class="print-options">
           <label for="sheet-qty">Quantidade na folha: <select id="sheet-qty" aria-label="Quantidade de etiquetas"></select></label>
           <label><input type="checkbox" id="sheet-mirror"> Espelhar para transfer</label>
         </div>
-        <button class="btn btn-secondary" id="btn-sheet">Simular folha A4 (PDF)</button>
+        <button class="btn btn-secondary" id="btn-sheet">Baixar amostra A4 (PDF)</button>
         <p class="print-note" id="download-note" role="status">Imprima o PDF em 100% (tamanho real), sem ajustar à página. Confira se o papel exige espelhamento e teste o QR após aplicar.</p>
       </div>
     </div>
@@ -464,7 +464,7 @@ function updateUsageCounter(){
   $('btn-sheet').disabled=locked||!valid||busy;
   $('license-exit').disabled=busy;
   $('btn-download').title=$('btn-sheet').title=locked?'Sem saldo disponível.':'';
-  if(!busy) $('btn-sheet').textContent='Simular folha A4 (PDF)'+(limit?' · '+qty.value+' un.':'');
+  if(!busy) $('btn-sheet').textContent='Baixar amostra A4 (PDF)'+(limit?' · '+qty.value+' un.':'');
 }
 function getProfileKey(){return token ? STORAGE_KEY+'_'+token.split('.')[0] : '';}
 function loadLabels(){return profiles;}
@@ -638,7 +638,7 @@ function renderPreview(){
     try {
       // QR real em alta resolução, sem distorção e com margem de quatro módulos.
       const temporary = document.createElement('div');
-      const url = buildWhatsAppLink();
+      const url = 'DEMONSTRACAO ACHEI ETIQUETAS - SEM VALIDADE';
       const generator = new QRCode(temporary, {text:url, width:170, height:170, correctLevel:QRCode.CorrectLevel.M});
       const model = generator._oQRCode;
       const n = model.getModuleCount();
@@ -724,7 +724,20 @@ const PDF_MARGIN_MM = 10;
 const PDF_GAP_MM = 4;
 async function captureLabel(){
   if(document.fonts && document.fonts.ready) await document.fonts.ready;
-  return html2canvas($('label-card'), {scale:4, backgroundColor:'#FFFFFF', logging:false});
+  const canvas=await html2canvas($('label-card'), {scale:4, backgroundColor:'#FFFFFF', logging:false});
+  const ctx=canvas.getContext('2d'), w=canvas.width, h=canvas.height;
+  ctx.save();
+  ctx.translate(w/2,h/2);
+  ctx.rotate(-Math.PI/12);
+  const font=Math.max(18,Math.floor(w/17));
+  ctx.font='bold '+font+'px sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='rgba(255,255,255,0.94)';
+  ctx.fillRect(-w/2,-font*0.9,w,font*1.8);
+  ctx.fillStyle='#C2185B';
+  ctx.fillText('AMOSTRA · SEM VALIDADE',0,0,w*0.93);
+  ctx.restore();
+  return canvas;
 }
 function mirrorCanvas(source){
   const canvas = document.createElement('canvas'); canvas.width=source.width; canvas.height=source.height;
@@ -733,14 +746,14 @@ function mirrorCanvas(source){
 }
 function saveDataUrl(dataUrl, filename){
   const link = document.createElement('a');
-  // Demonstração: nenhum arquivo é disponibilizado.
+  link.href=dataUrl;link.download='amostra-'+filename;document.body.appendChild(link);link.click();link.remove();
 }
 function setBusy(value){
   busy=value;
   ['f-nome','f-responsavel','f-tel1','f-tel2','f-info','f-msg','btn-save','btn-new'].forEach(id=>$(id).disabled=value);
   if(!value) $('btn-save').disabled=!validForm();
   updateUsageCounter();
-  $('btn-download').textContent = value ? 'Gerando arquivo...' : 'Simular etiqueta (PNG)';
+  $('btn-download').textContent = value ? 'Gerando arquivo...' : 'Baixar amostra (PNG)';
 }
 $('sheet-qty').addEventListener('change',updateUsageCounter);
 $('btn-download').addEventListener('click', async ()=>{
@@ -754,7 +767,7 @@ $('btn-download').addEventListener('click', async ()=>{
     const image=canvas.toDataURL('image/png');
     await consumeLabels(1,JSON.stringify(['png',getFormData()]));
     saveDataUrl(image,'etiqueta-achei-'+name+'.png');
-    $('download-note').textContent = 'Simulação concluída! Uma etiqueta foi debitada do saldo fictício.';
+    $('download-note').textContent = 'Amostra PNG baixada! Uma etiqueta foi debitada do saldo fictício.';
   } catch (e) {
     $('download-note').textContent = e.message || 'Não foi possível baixar a etiqueta. Tente novamente.';
   } finally {setBusy(false);}
@@ -789,7 +802,7 @@ $('btn-sheet').addEventListener('click', async ()=>{
     const url=URL.createObjectURL(blob);
     saveDataUrl(url,'achei-etiquetas-'+qty+'un'+(mirrored?'-espelhada':'')+'.pdf');
     setTimeout(()=>URL.revokeObjectURL(url),60000);
-    $('download-note').textContent = 'Simulação concluída! O saldo fictício foi atualizado.';
+    $('download-note').textContent = 'Amostra PDF baixada! Imprima em 100% (tamanho real) para conferir os 3 × 4 cm.';
   } catch(e) {
     $('download-note').textContent = e.message || 'Não foi possível gerar o PDF. Confira sua conexão e tente novamente.';
   } finally {setBusy(false);}
