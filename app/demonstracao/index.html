@@ -308,10 +308,10 @@
         <button class="btn btn-primary" id="btn-download">Baixar amostra (PNG)</button>
         <div class="print-options">
           <label for="sheet-qty">Quantidade na folha: <select id="sheet-qty" aria-label="Quantidade de etiquetas"></select></label>
-          <label><input type="checkbox" id="sheet-mirror"> Espelhar para transfer</label>
+          <p class="print-note" style="margin:4px 0 0;"><strong>Espelhamento automático para transfer.</strong> Não espelhe novamente na impressora.</p>
         </div>
         <button class="btn btn-secondary" id="btn-sheet">Baixar amostra A4 (PDF)</button>
-        <p class="print-note" id="download-note" role="status">Imprima o PDF em 100% (tamanho real), sem ajustar à página. Confira se o papel exige espelhamento e teste o QR após aplicar.</p>
+        <p class="print-note" id="download-note" role="status">O arquivo já está espelhado para transfer. Imprima em 100% (tamanho real), sem ajustar à página nem espelhar novamente.</p>
       </div>
     </div>
   </div>
@@ -364,11 +364,11 @@
       <div class="icon-card ic-terracota">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12h8M8 16h5"/></svg>
         <h3>3. Peça para imprimir no transfer</h3>
-        <p>Avise que é papel transfer (não papel comum) e pergunte se precisa espelhar a imagem — depende da marca do papel usado na papelaria.</p>
+        <p>Avise que é papel transfer (não papel comum) e que o arquivo já está espelhado. Peça para usar papel compatível com impressão espelhada; não espelhe outra vez.</p>
       </div>
     </div>
 
-    <div class="callout"><b>Sobre o espelhamento:</b> depende da marca do papel. Papel para tecido claro/branco quase sempre pede para espelhar a imagem antes de imprimir. Papel para tecido escuro/colorido varia — algumas marcas pedem sem espelhar. Confira sempre a embalagem do papel usado, ou pergunte na papelaria.</div>
+    <div class="callout"><b>Sobre o espelhamento:</b> as etiquetas já saem espelhadas automaticamente. Escolha um papel transfer que exija imagem espelhada e confira na embalagem as instruções para o tipo de tecido. Não ative o espelhamento novamente na impressão.</div>
 
     <div class="section-title">Depois de impresso: aplicando na roupa</div>
     <div class="icon-steps">
@@ -459,7 +459,6 @@ function updateUsageCounter(){
   }
   const valid=validForm()&&qrReady, locked=limit===0;
   qty.disabled=locked||busy;
-  $('sheet-mirror').disabled=locked||busy;
   $('btn-download').disabled=locked||!valid||busy;
   $('btn-sheet').disabled=locked||!valid||busy;
   $('license-exit').disabled=busy;
@@ -764,10 +763,10 @@ $('btn-download').addEventListener('click', async ()=>{
   try {
     const canvas = await captureLabel();
     if (remainingLabels() < 1) throw Error('Limite atingido.');
-    const image=canvas.toDataURL('image/png');
+    const image=mirrorCanvas(canvas).toDataURL('image/png');
     await consumeLabels(1,JSON.stringify(['png',getFormData()]));
-    saveDataUrl(image,'etiqueta-achei-'+name+'.png');
-    $('download-note').textContent = 'Amostra PNG baixada! Uma etiqueta foi debitada do saldo fictício.';
+    saveDataUrl(image,'etiqueta-achei-'+name+'-espelhada.png');
+    $('download-note').textContent = 'Amostra PNG espelhada baixada! Uma etiqueta foi debitada do saldo fictício.';
   } catch (e) {
     $('download-note').textContent = e.message || 'Não foi possível baixar a etiqueta. Tente novamente.';
   } finally {setBusy(false);}
@@ -776,7 +775,7 @@ $('btn-sheet').addEventListener('click', async ()=>{
   if (busy || !checkRequired()) return;
   const qty = Number($('sheet-qty').value);
   if (!Number.isInteger(qty) || qty<1 || qty>remainingLabels()) return;
-  const mirrored = $('sheet-mirror').checked;
+  const mirrored = true;
   persistCurrent();
   setBusy(true);
   $('btn-sheet').textContent = 'Gerando PDF...';
@@ -802,7 +801,7 @@ $('btn-sheet').addEventListener('click', async ()=>{
     const url=URL.createObjectURL(blob);
     saveDataUrl(url,'achei-etiquetas-'+qty+'un'+(mirrored?'-espelhada':'')+'.pdf');
     setTimeout(()=>URL.revokeObjectURL(url),60000);
-    $('download-note').textContent = 'Amostra PDF baixada! Imprima em 100% (tamanho real) para conferir os 3 × 4 cm.';
+    $('download-note').textContent = 'Amostra PDF espelhada baixada! Imprima em 100% (tamanho real), sem espelhar novamente.';
   } catch(e) {
     $('download-note').textContent = e.message || 'Não foi possível gerar o PDF. Confira sua conexão e tente novamente.';
   } finally {setBusy(false);}
