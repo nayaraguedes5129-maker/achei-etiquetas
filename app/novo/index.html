@@ -241,6 +241,7 @@
     <div class="usage-counter" id="usage-counter" style="margin:0 0 12px;padding:10px 14px;border-radius:12px;background:#FCE7EF;color:#2B2026;font-weight:800;text-align:center;">
       Etiquetas geradas: <span id="usage-count">0</span> de 14
     </div>
+    <p id="family-note" class="print-note" hidden>O Plano Familiar inclui etiquetas ilimitadas e figurinhas para toda a família. Adicione o plano na Hotmart para desbloquear. <button type="button" id="refresh-plan" class="btn btn-ghost" style="margin-top:8px">Atualizar meu plano</button></p>
     <div class="saved-bar" id="saved-bar">
       <span class="saved-bar-label">Minhas etiquetas:</span>
       <button class="chip-new" id="btn-new">+ Nova etiqueta</button>
@@ -249,11 +250,11 @@
     <div class="creator">
       <div class="form-col">
         <div class="field">
-          <label>Nome ou apelido da criança <span class="hint">(aparece na etiqueta)</span></label>
+          <label><span id="name-label">Nome ou apelido da criança</span> <span class="hint">(aparece na etiqueta)</span></label>
           <input type="text" id="f-nome" maxlength="30" placeholder="Ex: Tiffany">
         </div>
         <div class="field">
-          <label>Nome do responsável <span class="hint">(opcional, aparece na mensagem)</span></label>
+          <label><span id="contact-label">Nome do responsável</span> <span class="hint">(opcional, aparece na mensagem)</span></label>
           <input type="text" id="f-responsavel" maxlength="40" placeholder="Ex: Nayara (mãe)">
         </div>
         <div class="row2">
@@ -275,7 +276,13 @@
           <label>Mensagem exibida na etiqueta</label>
           <input type="text" id="f-msg" maxlength="40" value="Se me encontrar, fale com minha mãe">
         </div>
-        <div class="error-msg" id="err" role="alert">Preencha o nome ou apelido da criança e um telefone brasileiro válido com DDD.</div>
+        <div class="field" id="mascot-field" hidden>
+          <label for="f-figura">Figurinha da etiqueta <span class="hint">(Plano Familiar)</span></label>
+          <select id="f-figura" aria-label="Figurinha da etiqueta" style="width:100%;padding:10px;border-radius:10px;border:1px solid #F1CCD9;background:#fff;color:#2B2026;font:inherit;">
+            <option value="urso">Ursinho original</option><option value="menina">Menininha</option><option value="menino">Menininho</option><option value="adulta">Mulher</option><option value="adulto">Homem</option><option value="idosa">Idosa</option><option value="idoso">Idoso</option>
+          </select>
+        </div>
+        <div class="error-msg" id="err" role="alert">Preencha o nome ou apelido e um telefone brasileiro válido com DDD.</div>
         <button class="btn btn-ghost" id="btn-save">Salvar esta etiqueta na lista</button>
         <div class="saved-note" id="saved-note"></div>
       </div>
@@ -285,7 +292,7 @@
           <div class="label-card" id="label-card">
             <div class="label-top">
               <div class="label-logo">
-                <svg class="label-bear" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <svg id="label-mascot" class="label-bear" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <circle cx="17" cy="17" r="10" fill="#C99B76"/><circle cx="47" cy="17" r="10" fill="#C99B76"/>
                   <circle cx="17" cy="17" r="5" fill="#E8C5A8"/><circle cx="47" cy="17" r="5" fill="#E8C5A8"/>
                   <circle cx="32" cy="34" r="23" fill="#C99B76"/><ellipse cx="32" cy="40" rx="10" ry="8" fill="#F1D8C0"/>
@@ -318,7 +325,7 @@
   <div class="tab-panel" id="tab-guia">
     <div class="guide-hero">
       <h2>Como funciona a etiqueta Achei</h2>
-      <p>O QR Code abre direto uma conversa de WhatsApp com o responsável, já com uma mensagem pronta — quem encontrar a criança só precisa apertar enviar (ou ligar, já que o número aparece na conversa).</p>
+      <p>O QR Code abre direto uma conversa de WhatsApp com o responsável, já com uma mensagem pronta — quem encontrar a pessoa identificada só precisa apertar enviar (ou ligar, já que o número aparece na conversa).</p>
     </div>
 
     <div class="section-title">O que é papel transfer?</div>
@@ -353,7 +360,7 @@
       <div class="icon-card ic-gold">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
         <h3>1. Gere e baixe o arquivo</h3>
-        <p>Na aba "Criar etiqueta", preencha os dados e baixe a etiqueta única ou a folha A4 em PDF com a quantidade desejada, até o limite restante. Imprima em 100% (tamanho real), sem ajustar à página.</p>
+        <p>Na aba "Criar etiqueta", preencha os dados e baixe a etiqueta única ou a folha A4 em PDF com a quantidade desejada, respeitando o saldo do plano infantil ou sem limite total no Plano Familiar. Imprima em 100% (tamanho real), sem ajustar à página.</p>
       </div>
       <div class="icon-card ic-teal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
@@ -430,7 +437,36 @@ const API = 'https://achei-licencas.nayaraguedes5129.workers.dev';
 const TOKEN_KEY = 'achei_session_v2';
 const LABEL_LIMIT = 14; // máximo por folha, independentemente do saldo
 let token = '';
-let usage = {quota:0,used:0,remaining:0};
+let usage = {quota:0,used:0,remaining:0,family:false};
+const originalMascot = $('label-mascot').innerHTML;
+const CHILD_MESSAGE = 'Se me encontrar, fale com minha mãe';
+const FAMILY_MESSAGE = 'Se me encontrar, fale com meu contato';
+const FIGURES = new Set(['urso','menina','menino','adulta','adulto','idosa','idoso']);
+function familyFigure(){const v=$('f-figura').value;return usage.family&&FIGURES.has(v)?v:'urso';}
+function defaultMessage(){return usage.family?FAMILY_MESSAGE:CHILD_MESSAGE;}
+function drawMascot(){
+  const v=familyFigure(), svg=$('label-mascot');
+  if(v==='urso'){svg.innerHTML=originalMascot;return;}
+  const older=v==='idosa'||v==='idoso', female=['menina','adulta','idosa'].includes(v), child=v==='menina'||v==='menino';
+  const hair=older?'#A5A5AC':'#805A46', skin='#F1C6A4', shirt=female?'#DA8BA8':'#79B9B8';
+  const ears=`<circle cx="15" cy="30" r="4" fill="${skin}"/><circle cx="49" cy="30" r="4" fill="${skin}"/>`;
+  const back=female?`<path d="M13 35V24a19 19 0 0 1 38 0v23H13z" fill="${hair}"/>`:'';
+  const head=`<circle cx="32" cy="28" r="18" fill="${skin}"/>`;
+  const top=older?`<path d="M15 25C13 4 51 3 49 25l-5-7-24 1z" fill="${hair}"/>`:female?`<path d="M14 27C10 8 46 0 51 27c-9-1-16-9-18-14-5 9-12 12-19 14" fill="${hair}"/>`:`<path d="M14 25C12 5 48 5 50 25l-8-11-11 6-5-5z" fill="${hair}"/>`;
+  const details=older?'<g fill="none" stroke="#755A65" stroke-width="2"><rect x="20" y="27" width="10" height="7" rx="3"/><rect x="34" y="27" width="10" height="7" rx="3"/><path d="M30 30h4"/></g>':'';
+  const bow=child&&female?'<path d="m43 8 7-3-1 7 7 1-7 5-4-6z" fill="#C2185B"/>':'';
+  svg.innerHTML=`${back}<path d="M9 62q2-17 16-19h14q14 2 16 19z" fill="${shirt}"/>${ears}${head}${top}<circle cx="25" cy="30" r="2" fill="#3F3935"/><circle cx="39" cy="30" r="2" fill="#3F3935"/><path d="M28 38q4 4 8 0" stroke="#755A65" stroke-width="2" fill="none" stroke-linecap="round"/>${details}${bow}`;
+}
+function syncFamilyUI(previous){
+  $('mascot-field').hidden=!usage.family;
+  $('family-note').hidden=usage.family||!token;
+  $('name-label').textContent=usage.family?'Nome ou apelido do familiar':'Nome ou apelido da criança';
+  $('contact-label').textContent=usage.family?'Nome do contato de referência':'Nome do responsável';
+  $('f-nome').placeholder=usage.family?'Ex: Vovó Ana':'Ex: Tiffany';
+  if(!usage.family)$('f-figura').value='urso';
+  if(previous!==usage.family && $('f-msg').value===(previous?FAMILY_MESSAGE:CHILD_MESSAGE))$('f-msg').value=defaultMessage();
+  drawMascot();
+}
 try { token = sessionStorage.getItem(TOKEN_KEY) || ''; } catch(e){}
 let pending = null;
 let profiles = [];
@@ -439,16 +475,19 @@ let busy = false;
 let qrReady = false;
 
 function getGeneratedCount(){return usage.used;}
-function remainingLabels(){return token ? Math.max(0,usage.remaining) : 0;}
+function remainingLabels(){return token ? (usage.family?Infinity:Math.max(0,usage.remaining)) : 0;}
 function setUsage(data){
   if(![data.quota,data.used,data.remaining].every(Number.isInteger)||data.quota<0||data.used<0||data.remaining!==data.quota-data.used) throw Error('Dados de saldo inválidos.');
-  usage={quota:data.quota,used:data.used,remaining:data.remaining};
-  updateUsageCounter();
+  const previous=usage.family;
+  usage={quota:data.quota,used:data.used,remaining:data.remaining,family:data.family===true};
+  syncFamilyUI(previous);
+  if(previous!==usage.family)renderPreview();
+  else updateUsageCounter();
 }
 function updateUsageCounter(){
   const count=getGeneratedCount(), remaining=remainingLabels(), limit=Math.min(remaining,LABEL_LIMIT);
   $('usage-counter').textContent=token
-    ? (remaining===0 ? 'Limite atingido. ' : '')+'Etiquetas geradas: '+count+' de '+usage.quota+'. Restam '+remaining+'.'
+    ? (usage.family?'Plano Familiar ativo · Etiquetas ilimitadas':(remaining===0 ? 'Limite atingido. ' : '')+'Etiquetas geradas: '+count+' de '+usage.quota+'. Restam '+remaining+'.')
     : 'Entre para consultar seu saldo.';
   const qty=$('sheet-qty'), previous=Number(qty.value)||8;
   if(qty.options.length!==limit){
@@ -484,7 +523,7 @@ function logout(msg=''){
     if(getProfileKey()) sessionStorage.removeItem(getProfileKey());
     sessionStorage.removeItem(TOKEN_KEY);
   }catch(e){}
-  token='';usage={quota:0,used:0,remaining:0};profiles=[];pending=null;currentId=null;
+  token='';usage={quota:0,used:0,remaining:0,family:false};syncFamilyUI(true);profiles=[];pending=null;currentId=null;
   fillForm({});renderSavedBar();renderPreview();
   $('app-main').style.display='none';$('license-panel').style.display='block';
   $('license-email').value='';$('license-tx').value='';
@@ -527,14 +566,29 @@ async function restoreSession(){
   }catch(e){logout('Não foi possível conectar. Tente entrar novamente.');}
   finally{$('license-enter').disabled=false;}
 }
+let checkingPlan=false;
+async function refreshPlan(){
+  if(!token||busy||checkingPlan)return;
+  const session=token;
+  checkingPlan=true;
+  try {
+    const r=await apiCall('/balance');
+    if(token!==session||busy)return;
+    if(r.ok)setUsage(r.data);
+    else if(r.status===401)logout('Entre novamente para consultar seu plano.');
+  }catch(e){} finally{checkingPlan=false;}
+}
+$('refresh-plan').addEventListener('click',refreshPlan);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshPlan();});
+setInterval(()=>{if(!document.hidden)refreshPlan();},45000);
 async function consumeLabels(amount,fingerprint){
   if(!token)throw Error('Entre novamente para baixar.');
   if(pending&&pending.fingerprint!==fingerprint)throw Error('Há um download anterior sem confirmação. Repita o mesmo download antes de gerar outro.');
-  if(!pending)pending={fingerprint,id:crypto.randomUUID()};
+  if(!pending)pending={fingerprint,id:crypto.randomUUID(),family:usage.family};
   let r;
   // Reenvia o MESMO identificador se a conexão falhar; o servidor não debita duas vezes.
   for(let i=0;i<2;i++){
-    try{r=await apiCall('/consume','POST',{quantity:amount,requestId:pending.id});if(r.status<500)break;}catch(e){}
+    try{r=await apiCall('/consume','POST',{quantity:amount,requestId:pending.id,family:pending.family});if(r.status<500)break;}catch(e){}
   }
   if(!r||r.status>=500)throw Error('Não foi possível confirmar o saldo. Repita este mesmo download.');
   if(r.status===401){logout('Sua sessão terminou ou a compra está sem acesso.');throw Error('Entre novamente.');}
@@ -542,7 +596,7 @@ async function consumeLabels(amount,fingerprint){
     pending=null;
     if(r.status===409){
       try{const b=await apiCall('/balance');if(b.ok)setUsage(b.data);}catch(e){}
-      throw Error('Saldo insuficiente ou operação não autorizada. Confira seu saldo.');
+      throw Error(r.data.error==='family_not_active'?'O Plano Familiar não está mais ativo. Confira sua compra.':'Saldo insuficiente ou operação não autorizada. Confira seu saldo.');
     }
     throw Error('Não foi possível autorizar o download.');
   }
@@ -556,7 +610,8 @@ function getFormData(){
     tel1: $('f-tel1').value.trim(),
     tel2: $('f-tel2').value.trim(),
     info: $('f-info').value.trim(),
-    msg: $('f-msg').value.trim()
+    msg: $('f-msg').value.trim(),
+    figura: familyFigure()
   };
 }
 function fillForm(data){
@@ -565,7 +620,8 @@ function fillForm(data){
   $('f-tel1').value = data.tel1 || '';
   $('f-tel2').value = data.tel2 || '';
   $('f-info').value = data.info || '';
-  $('f-msg').value = data.msg || 'Se me encontrar, fale com minha mãe';
+  $('f-msg').value = data.msg || defaultMessage();
+  $('f-figura').value=usage.family&&FIGURES.has(data.figura)?data.figura:'urso';
 }
 
 function renderSavedBar(){
@@ -611,8 +667,8 @@ function buildWhatsAppLink(){
   const d = getFormData();
   const digits = normalizePhone(d.tel1);
   if (!digits) return '';
-  let text = 'Olá! Encontrei ' + (d.nome || 'uma criança') + ' com a etiqueta Achei.';
-  if(d.responsavel) text += ' Responsável: ' + d.responsavel + '.';
+  let text = 'Olá! Encontrei ' + (d.nome || (usage.family?'uma pessoa':'uma criança')) + ' com a etiqueta Achei.';
+  if(d.responsavel) text += (usage.family?' Contato: ':' Responsável: ') + d.responsavel + '.';
   if(d.tel2) text += ' Contato extra: +' + normalizePhone(d.tel2) + '.';
   if(d.info) text += ' Informação: ' + d.info + '.';
   text += ' Pode me ajudar?';
@@ -620,9 +676,10 @@ function buildWhatsAppLink(){
 }
 function renderPreview(){
   const d = getFormData();
-  $('prev-nome').querySelector('span').textContent = d.nome || 'Nome da criança';
+  $('prev-nome').querySelector('span').textContent = d.nome || (usage.family?'Nome do familiar':'Nome da criança');
   $('prev-nome').style.fontSize = d.nome.length > 22 ? '11px' : '13px';
-  $('prev-msg').querySelector('span').textContent = d.msg || 'Se me encontrar, fale com minha mãe';
+  $('prev-msg').querySelector('span').textContent = d.msg || defaultMessage();
+  drawMascot();
   const valid = validForm();
   $('btn-save').disabled = !valid;
   const qrEl = $('qrcode');
@@ -660,7 +717,7 @@ function renderPreview(){
   updateUsageCounter();
 }
 
-['f-nome','f-responsavel','f-tel1','f-tel2','f-info','f-msg'].forEach(id=>{
+['f-nome','f-responsavel','f-tel1','f-tel2','f-info','f-msg','f-figura'].forEach(id=>{
   $(id).addEventListener('input', renderPreview);
 });
 
@@ -735,7 +792,7 @@ function saveDataUrl(dataUrl, filename){
 }
 function setBusy(value){
   busy=value;
-  ['f-nome','f-responsavel','f-tel1','f-tel2','f-info','f-msg','btn-save','btn-new'].forEach(id=>$(id).disabled=value);
+  ['f-nome','f-responsavel','f-tel1','f-tel2','f-info','f-msg','f-figura','btn-save','btn-new'].forEach(id=>$(id).disabled=value);
   if(!value) $('btn-save').disabled=!validForm();
   updateUsageCounter();
   $('btn-download').textContent = value ? 'Gerando arquivo...' : 'Baixar etiqueta (PNG)';
