@@ -63,7 +63,7 @@ header{background:var(--berry);color:#fff}.header-inner{display:flex;justify-con
 .step-icons svg{width:34px;height:34px;padding:5px;background:#e3f5ee;border-radius:9px}
 .product-views .access-showcase{grid-column:1/-1;width:100%;max-width:860px;justify-self:center}.product-views .access-showcase img{width:100%}
 @media(min-width:621px){.product-views{grid-template-columns:minmax(0,1.65fr) minmax(0,1fr)}}
-.plan-options{margin-top:clamp(24px,5vw,52px)}.plan-options h3{color:var(--berry);margin-bottom:.35em}.plan-options article p{margin:.35em 0}
+.plan-options{margin-top:clamp(24px,5vw,52px)}.purchase-details{max-width:70ch;margin:1rem 0 0}.purchase-details dt{font-weight:800;color:var(--berry)}.purchase-details dd{margin:.3rem 0 0;color:var(--muted)}.purchase-details dt:not(:first-child){margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line)}
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GC2XF0P065"></script>
 <script>
@@ -124,11 +124,13 @@ header{background:var(--berry);color:#fff}.header-inner{display:flex;justify-con
 
   </div>
   <section class="plan-options" aria-labelledby="planos-titulo">
-    <h2 id="planos-titulo">Escolha seu plano</h2>
-    <div class="plans">
-      <article class="surface primary"><h3>Essencial</h3><p><strong>R$ 19,90</strong> em pagamento único.</p><p>Crie até 14 etiquetas infantis com QR Code.</p></article>
-      <article class="surface"><h3>Plano Familiar</h3><p><strong>Por mais R$ 9,90</strong> como adicional ao Essencial.</p><p>Crie etiquetas ilimitadas e escolha figurinhas para crianças, adultos e idosos.</p><p class="availability">O Familiar é um adicional do Essencial. Total com os dois planos: R$ 29,80.</p></article>
-    </div>
+    <h2 id="planos-titulo">O que está incluído na compra</h2>
+    <dl class="purchase-details">
+      <dt>Essencial · R$ 19,90</dt>
+      <dd>Pagamento único para criar até 14 etiquetas infantis com QR Code.</dd>
+      <dt>Adicional opcional: Plano Familiar · + R$ 9,90</dt>
+      <dd>Ao comprar o Essencial, você pode acrescentar o Familiar para criar etiquetas ilimitadas e escolher figurinhas para crianças, adultos e idosos. <strong>Total com o adicional: R$ 29,80.</strong></dd>
+    </dl>
   </section>
   <p class="application-note"><strong>Para uma boa leitura:</strong> escolha uma área lisa e plana da roupa, evite tecidos muito texturizados e teste o QR com a câmera antes de usar.</p>
 </div></section>
