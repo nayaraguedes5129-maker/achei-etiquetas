@@ -58,11 +58,12 @@ header{background:var(--berry);color:#fff}.header-inner{display:flex;justify-con
 .sticker,.label-large{position:relative;container-type:inline-size}
 .hero-figure .sticker{position:absolute}
 .label-name-overlay{position:absolute;top:17.5%;left:46%;transform:translate(-50%,-50%);font:800 6.1cqw/1 "Baloo 2",Inter,sans-serif;letter-spacing:-.015em;color:#174a3a;white-space:nowrap}
-.reunion-photo{position:relative}.reunion-photo img{display:block}
+.reunion-photo{position:relative}.reunion-photo img{display:block}.reunion-photo .reunion-sticker{display:block;height:9.6%;aspect-ratio:auto;overflow:hidden}.reunion-sticker .label-name-overlay{font-size:6px;font-size:6.1cqw}
 .step-icons{display:flex;gap:6px;margin:10px 0 12px;color:var(--green)}
 .step-icons svg{width:34px;height:34px;padding:5px;background:#e3f5ee;border-radius:9px}
-.product-views .access-showcase img{width:100%}
+.product-views .access-showcase{grid-column:1/-1;width:100%;max-width:860px;justify-self:center}.product-views .access-showcase img{width:100%}
 @media(min-width:621px){.product-views{grid-template-columns:minmax(0,1.65fr) minmax(0,1fr)}}
+.plan-options{margin-top:clamp(24px,5vw,52px)}.plan-options h3{color:var(--berry);margin-bottom:.35em}.plan-options article p{margin:.35em 0}
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GC2XF0P065"></script>
 <script>
@@ -100,7 +101,7 @@ header{background:var(--berry);color:#fff}.header-inner{display:flex;justify-con
   </div>
   <div class="scene-pair" aria-label="Busca e reencontro no parque">
     <figure class="scene"><img src="assets/mae-procurando.webp" width="640" height="800" loading="lazy" alt="Mãe procurando o filho em um parque movimentado"><figcaption>A mãe procura pelo filho entre as pessoas no parque.</figcaption></figure>
-    <figure class="scene"><div class="reunion-photo"><img src="assets/reencontro.webp" width="640" height="800" loading="lazy" alt="Mãe abraça o filho de camiseta branca, ao lado da pessoa que ajudou e está com o celular na mão"><span class="sticker" style="--x:49%;--y:53.5%;--w:9%" role="img" aria-label="Etiqueta original Achei com o nome Theo, na manga branca"><span class="label-name-overlay" aria-hidden="true">Theo</span></span></div><figcaption>Mãe e filho se abraçam. Ao lado, quem ajudou ainda está com o celular na mão.</figcaption></figure>
+    <figure class="scene"><div class="reunion-photo"><img src="assets/reencontro.webp" width="640" height="800" loading="lazy" alt="Mãe abraça o filho de camiseta branca, ao lado da pessoa que ajudou e está com o celular na mão"><span class="sticker reunion-sticker" style="--x:49%;--y:53.5%;--w:9%" role="img" aria-label="Etiqueta original Achei com o nome Theo, na manga branca"><span class="label-name-overlay" aria-hidden="true">Theo</span></span></div><figcaption>Mãe e filho se abraçam. Ao lado, quem ajudou ainda está com o celular na mão.</figcaption></figure>
   </div>
 </div></section>
 <section id="como"><div class="wrap">
@@ -118,10 +119,17 @@ header{background:var(--berry);color:#fff}.header-inner{display:flex;justify-con
   <h2>Etiquetas com QR Code para roupas infantis</h2>
   <p class="section-lead">Com um único pagamento de R$ 19,90, você acessa o gerador e cria até 14 etiquetas para imprimir e aplicar nas roupas da criança.</p>
   <div class="examples product-views">
-    <figure class="surface access-showcase"><img src="assets/gerador-achei.webp" width="1068" height="643" loading="lazy" alt="Tela do gerador Achei com os campos de personalização e a prévia de uma etiqueta para Theo"><figcaption><strong>Veja o gerador por dentro</strong><br>Preencha os dados do responsável e veja como a etiqueta fica antes de baixar. A imagem mostra uma demonstração com dados fictícios.</figcaption></figure>
+    <figure class="surface access-showcase"><img src="assets/gerador-achei.webp" width="1064" height="941" loading="lazy" alt="Tela do gerador com o logo da Achei Etiquetas, os campos de personalização e a prévia da etiqueta de Theo"><figcaption><strong>Veja o gerador por dentro</strong><br>Preencha os dados do responsável e veja como a etiqueta fica antes de baixar. A imagem mostra uma demonstração com dados fictícios.</figcaption></figure>
     <figure class="scene application-scene"><img src="assets/aplicacao-transfer.webp" alt="Detalhe de mãos usando um ferro sobre o papel transfer na manga de uma camiseta infantil" loading="lazy" width="960" height="640"><figcaption><strong>Como aplicar na roupa</strong><br>Use o papel transfer adequado ao tecido e siga as instruções do fabricante. Depois de aplicar a etiqueta, teste a leitura do QR Code com a câmera do celular.</figcaption></figure>
-    <figure class="surface label-showcase"><span class="label-sample label-large" role="img" aria-label="Etiqueta original Achei de 3 por 4 centímetros com ursinho, campo Nome, QR Code demonstrativo e mensagem"><span class="label-name-overlay" aria-hidden="true">Nome</span></span><figcaption><strong>Etiqueta original Achei</strong><br>Modelo original de 3 × 4 cm. O campo Nome é personalizável e o QR Code é demonstrativo.</figcaption></figure>
+
   </div>
+  <section class="plan-options" aria-labelledby="planos-titulo">
+    <h2 id="planos-titulo">Escolha seu plano</h2>
+    <div class="plans">
+      <article class="surface primary"><h3>Essencial</h3><p><strong>R$ 19,90</strong> em pagamento único.</p><p>Crie até 14 etiquetas infantis com QR Code.</p></article>
+      <article class="surface"><h3>Plano Familiar</h3><p><strong>Por mais R$ 9,90</strong> como adicional ao Essencial.</p><p>Crie etiquetas ilimitadas e escolha figurinhas para crianças, adultos e idosos.</p><p class="availability">O adicional será oferecido no checkout após a liberação pela Hotmart.</p></article>
+    </div>
+  </section>
   <p class="application-note"><strong>Para uma boa leitura:</strong> escolha uma área lisa e plana da roupa, evite tecidos muito texturizados e teste o QR com a câmera antes de usar.</p>
 </div></section>
 <section class="faq" id="duvidas"><div class="wrap narrow">
