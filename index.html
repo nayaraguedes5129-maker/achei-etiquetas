@@ -72,7 +72,26 @@ header{background:var(--berry);color:#fff}.header-inner{display:flex;justify-con
   gtag('js', new Date());
   gtag('config', 'G-GC2XF0P065');
 </script>
-<script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-subids async defer></script>
+<script>
+  if (!window.fbq) {
+    const pixel = window.fbq = function () {
+      if (pixel.callMethod) pixel.callMethod.apply(pixel, arguments);
+      else pixel.queue.push(arguments);
+    };
+    window._fbq = pixel;
+    pixel.push = pixel;
+    pixel.loaded = true;
+    pixel.version = '2.0';
+    pixel.queue = [];
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    document.head.append(script);
+  }
+  fbq('set', 'autoConfig', false, '4220130171598743');
+  fbq('init', '4220130171598743');
+  fbq('track', 'PageView');
+</script>
 </head>
 <body>
 <header><div class="wrap header-inner">
@@ -130,7 +149,7 @@ header{background:var(--berry);color:#fff}.header-inner{display:flex;justify-con
       <dt>Essencial · R$ 29,90</dt>
       <dd>Pagamento único para criar até 14 etiquetas infantis com QR Code.</dd>
       <dt>Adicional opcional: Plano Familiar · + R$ 9,90</dt>
-      <dd>Ao comprar o Essencial, você pode acrescentar o Familiar para criar etiquetas ilimitadas e escolher figurinhas para crianças, adultos e idosos. <strong>Total com o adicional: R$ 29,80.</strong></dd>
+      <dd>Ao comprar o Essencial, você pode acrescentar o Familiar para criar etiquetas ilimitadas e escolher figurinhas para crianças, adultos e idosos. <strong>Total com o adicional: R$ 39,80.</strong></dd>
     </dl>
   </section>
   <p class="application-note"><strong>Para uma boa leitura:</strong> escolha uma área lisa e plana da roupa, evite tecidos muito texturizados e teste o QR com a câmera antes de usar.</p>
@@ -155,4 +174,16 @@ header{background:var(--berry);color:#fff}.header-inner{display:flex;justify-con
 </div></section>
 </main>
 <footer><div class="wrap"><span>© Achei Etiquetas</span></div></footer>
+<script>
+  const visit = new URLSearchParams(window.location.search);
+  const campaignParameters = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'utm_id', 'sck', 'fbclid'];
+  document.querySelectorAll('a[href^="https://pay.hotmart.com/H107287018A?"]').forEach((link) => {
+    const checkoutUrl = new URL(link.href);
+    for (const parameter of campaignParameters) {
+      const value = visit.get(parameter);
+      if (value) checkoutUrl.searchParams.set(parameter, value);
+    }
+    link.href = checkoutUrl.href;
+  });
+</script>
 </body></html>
