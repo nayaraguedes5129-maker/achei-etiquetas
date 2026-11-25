@@ -117,6 +117,8 @@
   .label-msg-heart{width:13px;height:13px;flex:0 0 13px;margin:0 5px;}
   .label-foot{display:none;}
   .label-brand{text-align:center;font-family:'Nunito',sans-serif;font-size:10.5px;color:#007A52;font-weight:800;letter-spacing:.1px;line-height:11px;margin:0;}
+  .label-brand{display:flex;align-items:center;justify-content:center;gap:3px;}
+  #label-ribbon[hidden]{display:none;}
   /* Mesma identidade, com proporção fixa de 30 × 40 mm para impressão. */
   .label-card{width:204px;height:272px;flex:0 0 204px;box-shadow:none;border:1.2px solid #E7A8C2;border-radius:10px;padding:3px 4px;display:grid;grid-template-rows:24px 24px 170px 25px 11px;gap:2px;background:#fff;overflow:hidden;}
   .label-top{min-height:0;margin:0;}
@@ -280,6 +282,7 @@
           <label for="f-figura">Figurinha da etiqueta <span class="hint">(Plano Familiar)</span></label>
           <select id="f-figura" aria-label="Figurinha da etiqueta" style="width:100%;padding:10px;border-radius:10px;border:1px solid #F1CCD9;background:#fff;color:#2B2026;font:inherit;">
             <option value="urso">Ursinho original</option><option value="menina">Menininha</option><option value="menino">Menininho</option><option value="adulta">Mulher</option><option value="adulto">Homem</option><option value="idosa">Idosa</option><option value="idoso">Idoso</option>
+            <option value="laco-autismo">Autismo · laço de quebra-cabeça</option>
             <option value="autismo">Autismo · símbolo do infinito colorido</option>
           </select>
         </div>
@@ -307,7 +310,21 @@
             <div class="label-name" id="prev-nome"><span>Nome da criança</span><svg class="label-name-heart" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 20.5S4 15.4 4 9.5C4 6.6 6.1 5 8.5 5c1.6 0 2.8.8 3.5 2 0.7-1.2 1.9-2 3.5-2C17.9 5 20 6.6 20 9.5c0 5.9-8 11-8 11z" fill="#C2185B"/></svg></div>
             <div class="label-qr"><div id="qrcode"></div></div>
             <div class="label-msg" id="prev-msg"><svg class="label-msg-heart" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 20.5S4 15.4 4 9.5C4 6.6 6.1 5 8.5 5c1.6 0 2.8.8 3.5 2 0.7-1.2 1.9-2 3.5-2C17.9 5 20 6.6 20 9.5c0 5.9-8 11-8 11z" fill="#C2185B"/></svg><span>Se me encontrar, fale com minha mãe</span><svg class="label-msg-heart" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 20.5S4 15.4 4 9.5C4 6.6 6.1 5 8.5 5c1.6 0 2.8.8 3.5 2 0.7-1.2 1.9-2 3.5-2C17.9 5 20 6.6 20 9.5c0 5.9-8 11-8 11z" fill="#C2185B"/></svg></div>
-            <div class="label-brand">@acheietiquetas</div>
+            <div class="label-brand">
+              <svg id="label-ribbon" hidden width="13" height="13" viewBox="0 0 40 44" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <pattern id="ribbon-puzzle" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <rect width="20" height="20" fill="#FFD234"/>
+                    <path d="M0 0H10V3A2 2 0 1 1 10 7V10H7A2 2 0 1 0 3 10H0Z" fill="#168FD1"/>
+                    <path d="M10 10H13A2 2 0 1 1 17 10H20V20H10V17A2 2 0 1 0 10 13Z" fill="#168FD1"/>
+                    <path d="M0 10H3A2 2 0 1 1 7 10H10V13A2 2 0 1 1 10 17V20H0Z" fill="#EF4047"/>
+                  </pattern>
+                </defs>
+                <path d="M9 16C7 8 12 2 20 2S33 8 31 16L25 24L37 36L29 42L20 31L11 42L3 36L15 23ZM15 12L20 17L25 12C25 7 15 7 15 12Z" fill="url(#ribbon-puzzle)" fill-rule="evenodd" stroke="#17304B" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M15 23L25 12M20 31L25 24" fill="none" stroke="#17304B" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>@acheietiquetas</span>
+            </div>
           </div>
         </div>
         <p class="print-note"><strong>Modelo compacto: 3 × 4 cm.</strong><br>Use o PDF em tamanho real para imprimir.</p>
@@ -442,12 +459,13 @@ let usage = {quota:0,used:0,remaining:0,family:false};
 const originalMascot = $('label-mascot').innerHTML;
 const CHILD_MESSAGE = 'Se me encontrar, fale com minha mãe';
 const FAMILY_MESSAGE = 'Se me encontrar, fale com meu contato';
-const FIGURES = new Set(['urso','menina','menino','adulta','adulto','idosa','idoso','autismo']);
+const FIGURES = new Set(['urso','menina','menino','adulta','adulto','idosa','idoso','autismo','laco-autismo']);
 function familyFigure(){const v=$('f-figura').value;return usage.family&&FIGURES.has(v)?v:'urso';}
 function defaultMessage(){return usage.family?FAMILY_MESSAGE:CHILD_MESSAGE;}
 function drawMascot(){
   const v=familyFigure(), svg=$('label-mascot');
-  if(v==='urso'){svg.innerHTML=originalMascot;return;}
+  $('label-ribbon').toggleAttribute('hidden',v!=='laco-autismo');
+  if(v==='urso'||v==='laco-autismo'){svg.innerHTML=originalMascot;return;}
   if(v==='autismo'){
     svg.innerHTML=`<defs>
       <linearGradient id="autism-infinity-colors" x2="100%" y2="0%">
